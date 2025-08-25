@@ -1,0 +1,2 @@
+# Progetto_Traccia_2_TIW_2024-2025
+This is a project developed for Polimi TIW course AA.24-25 using HTML and Javascript.
