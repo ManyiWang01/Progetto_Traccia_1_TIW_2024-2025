@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 public class AuctionBean {
 	private int id_asta;
 	private float p_iniziale;
-	private float min_rialzo;
+	private int min_rialzo;
 	private Timestamp data_scadenza;
 	private boolean status;
 	private String creator;
@@ -23,10 +23,10 @@ public class AuctionBean {
 	public void setP_iniziale(float p_iniziale) {
 		this.p_iniziale = p_iniziale;
 	}
-	public float getMin_rialzo() {
+	public int getMin_rialzo() {
 		return min_rialzo;
 	}
-	public void setMin_rialzo(float min_rialzo) {
+	public void setMin_rialzo(int min_rialzo) {
 		this.min_rialzo = min_rialzo;
 	}
 	public Timestamp getData_scadenza() {

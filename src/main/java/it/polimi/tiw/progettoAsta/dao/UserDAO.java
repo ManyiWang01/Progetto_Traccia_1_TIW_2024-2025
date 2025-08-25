@@ -4,8 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 import it.polimi.tiw.progettoAsta.bean.UserBean;
 
@@ -17,8 +15,11 @@ public class UserDAO {
 		this.connection = connection;
 	}
 	
-	public List<UserBean> getUserInfo(String username) throws SQLException {
-		List<UserBean> userList = new ArrayList<>();
+	public UserBean getUserInfo(String username) throws SQLException {
+		if (username == null || username.isBlank()) {
+			return null;
+		}
+		UserBean user = new UserBean();
 		String query = "SELECT username, nome, cognome, indirizzo FROM user WHERE username = ?";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
@@ -26,12 +27,10 @@ public class UserDAO {
 			pstatement = connection.prepareStatement(query);
 			result = pstatement.executeQuery();
 			while (result.next()) {
-				UserBean user = new UserBean();
 				user.setUsername(result.getString("username"));
 				user.setNome(result.getString("nome"));
 				user.setCognome(result.getString("cognome"));
 				user.setIndirizzo(result.getString("indirizzo"));
-				userList.add(user);
 			}
 		} catch (SQLException e) {
 			throw new SQLException(e);
@@ -51,19 +50,25 @@ public class UserDAO {
 				throw new SQLException("Cannot close statement");
 			}
 		}
-		return userList;
+		return user;
 	}
-	public String getUserPassword(String username) throws SQLException {
+	
+	public boolean checkUserPassword(String username, String password) throws SQLException {
+		boolean checked = false;
+		if (username == null || username.isBlank() || password == null || password.isBlank()) {
+			return checked;
+		}
 		String query = "SELECT password FROM user WHERE username = ?";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
-		String password = null;
 		try {
 			pstatement = connection.prepareStatement(query);
 			pstatement.setString(1, username);
 			result = pstatement.executeQuery();
 			while(result.next()) {
-				password = result.getString("password");
+				if (password.equals(result.getString("password"))) {
+					checked = true;
+				}
 			}
 		}
 		catch (SQLException e){
@@ -85,6 +90,6 @@ public class UserDAO {
 				throw new SQLException("Cannot close statement");
 			}
 		}
-		return password;
+		return checked;
 	}
 }
