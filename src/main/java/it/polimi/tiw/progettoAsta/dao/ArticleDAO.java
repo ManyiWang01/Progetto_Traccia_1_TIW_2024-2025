@@ -17,9 +17,9 @@ public class ArticleDAO {
 		this.connection = connection;
 	}
 	
-	public void addArticle(String nome_articolo, String descrizione, String url_immagine, float prezzo, String username) throws SQLException {
+	public void addArticle(String nome_articolo, String descrizione, String url_immagine, BigDecimal prezzo, String username) throws SQLException {
 		if (nome_articolo == null || nome_articolo.isBlank() || descrizione == null || descrizione.isBlank() || 
-				url_immagine == null || url_immagine.isBlank() || prezzo < 0 || username == null || username.isBlank()) {
+				url_immagine == null || url_immagine.isBlank() || prezzo == null || prezzo.compareTo(new BigDecimal("0")) < 0 || username == null || username.isBlank()) {
 			return;
 		}
 		String query = "INSERT INTO asta.articolo (nome, descrizione, immagine, prezzo, username, id_asta) VALUES (?, ?, ?, ?, ?, NULL)";
@@ -29,7 +29,7 @@ public class ArticleDAO {
 			pstatement.setString(1, nome_articolo);
 			pstatement.setString(2, descrizione);
 			pstatement.setString(3, url_immagine);
-			pstatement.setBigDecimal(4, BigDecimal.valueOf(prezzo));
+			pstatement.setBigDecimal(4, prezzo);
 			pstatement.setString(5, username);
 			pstatement.executeUpdate();
 		}
@@ -102,7 +102,7 @@ public class ArticleDAO {
 				article.setNome_articolo(result.getString("nome"));
 				article.setDescrizione_articolo(result.getString("descrizione"));
 				article.setUrl_immagine(result.getString("immagine"));
-				article.setPrezzo(result.getFloat("prezzo"));
+				article.setPrezzo(result.getBigDecimal("prezzo"));
 				article.setUser(result.getString("username"));
 				article.setId_asta(null);
 				articleList.add(article);
@@ -148,7 +148,7 @@ public class ArticleDAO {
 				article.setNome_articolo(result.getString("nome"));
 				article.setDescrizione_articolo(result.getString("descrizione"));
 				article.setUrl_immagine(result.getString("immagine"));
-				article.setPrezzo(result.getFloat("prezzo"));
+				article.setPrezzo(result.getBigDecimal("prezzo"));
 				article.setUser(result.getString("username"));
 				article.setId_asta(null);
 				articleList.add(article);

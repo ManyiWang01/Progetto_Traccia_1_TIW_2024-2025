@@ -1,11 +1,13 @@
 package it.polimi.tiw.progettoAsta.bean;
 
+import java.math.BigDecimal;
+
 public class ArticleBean {
 	private int id_articolo;
 	private String nome_articolo;
 	private String descrizione_articolo;
 	private String url_immagine;
-	private float prezzo;
+	private BigDecimal prezzo;
 	private String user;
 	private Integer id_asta;
 	
@@ -33,10 +35,10 @@ public class ArticleBean {
 	public void setUrl_immagine(String url_immagine) {
 		this.url_immagine = url_immagine;
 	}
-	public float getPrezzo() {
+	public BigDecimal getPrezzo() {
 		return prezzo;
 	}
-	public void setPrezzo(float prezzo) {
+	public void setPrezzo(BigDecimal prezzo) {
 		this.prezzo = prezzo;
 	}
 	public String getUser() {

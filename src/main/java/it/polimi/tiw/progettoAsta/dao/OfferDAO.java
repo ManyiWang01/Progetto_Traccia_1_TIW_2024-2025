@@ -35,7 +35,7 @@ public class OfferDAO {
 				offer.setId_asta(id_auction);
 				offer.setUser(result.getString("username"));
 				offer.setData_offerta(result.getTimestamp("data_offerta"));
-				offer.setP_offerta(result.getFloat("p_offerta"));
+				offer.setP_offerta(result.getBigDecimal("p_offerta"));
 				offerList.addLast(offer);
 			}
 		}
@@ -79,7 +79,7 @@ public class OfferDAO {
 				maxOffer.setId_asta(id_auction);
 				maxOffer.setUser(result.getString("username"));
 				maxOffer.setData_offerta(result.getTimestamp("data_offerta"));
-				maxOffer.setP_offerta(result.getFloat("p_offerta"));
+				maxOffer.setP_offerta(result.getBigDecimal("p_offerta"));
 			}
 		}
 		catch (SQLException e) {
@@ -106,8 +106,8 @@ public class OfferDAO {
 		return maxOffer;
 	}
 	
-	public void makeAnOffer(int id_auction, String username, Timestamp data_offerta, float p_offerta) throws SQLException {
-		if (id_auction < 0 || username == null || username.isBlank() || data_offerta == null || p_offerta < 0) {
+	public void makeAnOffer(int id_auction, String username, Timestamp data_offerta, BigDecimal p_offerta) throws SQLException {
+		if (id_auction < 0 || username == null || username.isBlank() || data_offerta == null || p_offerta == null || p_offerta.compareTo(new BigDecimal("0")) < 0) {
 			return;
 		}
 		String query = "INSERT INTO asta.offerta (id_asta, username, data_offerta, p_offerta) VALUE(?, ?, ?, ?)";
@@ -117,7 +117,7 @@ public class OfferDAO {
 			pstatement.setInt(1, id_auction);
 			pstatement.setString(2, username);
 			pstatement.setTimestamp(3, data_offerta);
-			pstatement.setBigDecimal(4, BigDecimal.valueOf(p_offerta));
+			pstatement.setBigDecimal(4, p_offerta);
 			pstatement.executeUpdate();
 		}
 		catch (SQLException e) {

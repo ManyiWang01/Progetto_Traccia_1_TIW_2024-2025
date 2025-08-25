@@ -33,7 +33,7 @@ public class AuctionDAO {
 			result = pstatement.executeQuery();
 			while (result.next()) {
 				auction.setId_asta(result.getInt("id_asta"));
-				auction.setP_iniziale(result.getFloat("p_iniziale"));
+				auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
 				auction.setMin_rialzo(result.getInt("min_rialzo"));
 				auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 				auction.setCreator(result.getString("username"));
@@ -65,10 +65,10 @@ public class AuctionDAO {
 		return auction;
 	}
 	
- 	public int createAuction(float p_iniziale, int min_rialzo, Timestamp data_scadenza, String user) throws SQLException {
+ 	public int createAuction(BigDecimal p_iniziale, int min_rialzo, Timestamp data_scadenza, String user) throws SQLException {
 		int code = 0;
 		int last_added_id = -1;
-		if (p_iniziale < 0 || min_rialzo < 0 || data_scadenza == null || user == null || user.isBlank()) {
+		if (p_iniziale == null || p_iniziale.compareTo(new BigDecimal("0")) < 0 || min_rialzo < 0 || data_scadenza == null || user == null || user.isBlank()) {
 			return last_added_id;
 		}
 		String add_query = "INSERT INTO asta.asta (p_iniziale, min_rialzo, data_scadenza, username) VALUE (?, ?, ?, ?)";
@@ -78,7 +78,7 @@ public class AuctionDAO {
 		Statement last_added_statement = null;
 		try {
 			add_pstatement = connection.prepareStatement(add_query);
-			add_pstatement.setBigDecimal(1, BigDecimal.valueOf(p_iniziale));
+			add_pstatement.setBigDecimal(1, p_iniziale);
 			add_pstatement.setInt(2, min_rialzo);
 			add_pstatement.setTimestamp(3, data_scadenza);
 			add_pstatement.setString(4, user);
@@ -168,7 +168,7 @@ public class AuctionDAO {
 			while (result.next()) {
 				AuctionBean auction = new AuctionBean();
 				auction.setId_asta(result.getInt("id_asta"));
-				auction.setP_iniziale(result.getFloat("p_iniziale"));
+				auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
 				auction.setMin_rialzo(result.getInt("min_rialzo"));
 				auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 				auction.setCreator(result.getString("username"));
@@ -216,7 +216,7 @@ public class AuctionDAO {
 			while (result.next()) {
 				AuctionBean auction = new AuctionBean();
 				auction.setId_asta(result.getInt("id_asta"));
-				auction.setP_iniziale(result.getFloat("p_iniziale"));
+				auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
 				auction.setMin_rialzo(result.getInt("min_rialzo"));
 				auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 				auction.setCreator(result.getString("username"));
@@ -275,7 +275,7 @@ public class AuctionDAO {
 						if (article_result.getString("nome").contains(key) || article_result.getString("descizione").contains(key)) {
 							AuctionBean auction = new AuctionBean();
 							auction.setId_asta(result.getInt("id_asta"));
-							auction.setP_iniziale(result.getFloat("p_iniziale"));
+							auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
 							auction.setMin_rialzo(result.getInt("min_rialzo"));
 							auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 							auction.setCreator(result.getString("username"));

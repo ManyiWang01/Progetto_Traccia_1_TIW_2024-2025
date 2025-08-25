@@ -1,11 +1,12 @@
 package it.polimi.tiw.progettoAsta.bean;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class OfferBean {
 	private int id_asta;
 	private String user;
-	private float p_offerta;
+	private BigDecimal p_offerta;
 	private Timestamp data_offerta;
 	
 	public int getId_asta() {
@@ -20,10 +21,10 @@ public class OfferBean {
 	public void setUser(String user) {
 		this.user = user;
 	}
-	public float getP_offerta() {
+	public BigDecimal getP_offerta() {
 		return p_offerta;
 	}
-	public void setP_offerta(float p_offerta) {
+	public void setP_offerta(BigDecimal p_offerta) {
 		this.p_offerta = p_offerta;
 	}
 	public Timestamp getData_offerta() {

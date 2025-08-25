@@ -1,10 +1,11 @@
 package it.polimi.tiw.progettoAsta.bean;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class AuctionBean {
 	private int id_asta;
-	private float p_iniziale;
+	private BigDecimal p_iniziale;
 	private int min_rialzo;
 	private Timestamp data_scadenza;
 	private boolean status;
@@ -17,10 +18,10 @@ public class AuctionBean {
 	public void setId_asta(int id_asta) {
 		this.id_asta = id_asta;
 	}
-	public float getP_iniziale() {
+	public BigDecimal getP_iniziale() {
 		return p_iniziale;
 	}
-	public void setP_iniziale(float p_iniziale) {
+	public void setP_iniziale(BigDecimal p_iniziale) {
 		this.p_iniziale = p_iniziale;
 	}
 	public int getMin_rialzo() {
