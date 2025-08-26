@@ -107,7 +107,7 @@ public class OfferDAO {
 	}
 	
 	public void makeAnOffer(int id_auction, String username, Timestamp data_offerta, BigDecimal p_offerta) throws SQLException {
-		if (id_auction < 0 || username == null || username.isBlank() || data_offerta == null || p_offerta == null || p_offerta.compareTo(new BigDecimal("0")) < 0) {
+		if (id_auction < 0 || username == null || username.trim().isEmpty() || data_offerta == null || p_offerta == null || p_offerta.compareTo(new BigDecimal("0")) < 0) {
 			return;
 		}
 		String query = "INSERT INTO asta.offerta (id_asta, username, data_offerta, p_offerta) VALUE(?, ?, ?, ?)";

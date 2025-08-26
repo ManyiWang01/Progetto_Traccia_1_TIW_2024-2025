@@ -68,7 +68,8 @@ public class AuctionDAO {
  	public int createAuction(BigDecimal p_iniziale, int min_rialzo, Timestamp data_scadenza, String user) throws SQLException {
 		int code = 0;
 		int last_added_id = -1;
-		if (p_iniziale == null || p_iniziale.compareTo(new BigDecimal("0")) < 0 || min_rialzo < 0 || data_scadenza == null || user == null || user.isBlank()) {
+		if (p_iniziale == null || p_iniziale.compareTo(new BigDecimal("0")) < 0 || min_rialzo < 0 ||
+				data_scadenza == null || user == null || user.trim().isEmpty()) {
 			return last_added_id;
 		}
 		String add_query = "INSERT INTO asta.asta (p_iniziale, min_rialzo, data_scadenza, username) VALUE (?, ?, ?, ?)";
@@ -129,7 +130,7 @@ public class AuctionDAO {
 	}
 	
 	public void endAuction(int id_asta, String winner) throws SQLException {
-		if (id_asta < 0 || winner == null || winner.isBlank()) {
+		if (id_asta < 0 || winner == null || winner.trim().isEmpty()) {
 			return;
 		}
 		String query = "UPDATE asta SET status = 1, winner = ? WHERE id_asta = ?";
@@ -154,7 +155,7 @@ public class AuctionDAO {
 	}
 	
 	public List<AuctionBean> findAuctionByCreator(String username) throws SQLException {
-		if (username == null || username.isBlank()) {
+		if (username == null || username.trim().isEmpty()) {
 			return null;
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();
@@ -202,7 +203,7 @@ public class AuctionDAO {
 	}
 	
 	public List<AuctionBean> findAuctionByWinner(String winner) throws SQLException {
-		if (winner == null || winner.isBlank()) {
+		if (winner == null || winner.trim().isEmpty()) {
 			return null;
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();
@@ -250,7 +251,7 @@ public class AuctionDAO {
 	}
 	
   	public List<AuctionBean> findAuctionByKey(String key) throws SQLException {
-		if (key == null || key.isBlank()) {
+		if (key == null || key.trim().isEmpty()) {
 			return null;
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();

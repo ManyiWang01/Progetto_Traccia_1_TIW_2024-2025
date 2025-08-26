@@ -18,8 +18,8 @@ public class ArticleDAO {
 	}
 	
 	public void addArticle(String nome_articolo, String descrizione, String url_immagine, BigDecimal prezzo, String username) throws SQLException {
-		if (nome_articolo == null || nome_articolo.isBlank() || descrizione == null || descrizione.isBlank() || 
-				url_immagine == null || url_immagine.isBlank() || prezzo == null || prezzo.compareTo(new BigDecimal("0")) < 0 || username == null || username.isBlank()) {
+		if (nome_articolo == null || nome_articolo.trim().isEmpty() || descrizione == null || descrizione.trim().isEmpty() || 
+				url_immagine == null || url_immagine.trim().isEmpty() || prezzo == null || prezzo.compareTo(new BigDecimal("0")) < 0 || username == null || username.trim().isEmpty()) {
 			return;
 		}
 		String query = "INSERT INTO asta.articolo (nome, descrizione, immagine, prezzo, username, id_asta) VALUES (?, ?, ?, ?, ?, NULL)";
@@ -85,7 +85,7 @@ public class ArticleDAO {
 	}
 
 	public List<ArticleBean> findArticleByUser(String user) throws SQLException {
-		if (user == null || user.isBlank()) {
+		if (user == null || user.trim().isEmpty()) {
 			return null;
 		}
 		String query = "SELECT * FROM articolo WHERE id_asta IS NULL AND username = ?";

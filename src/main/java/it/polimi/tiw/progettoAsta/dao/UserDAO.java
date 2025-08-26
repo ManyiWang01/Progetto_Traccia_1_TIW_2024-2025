@@ -16,7 +16,7 @@ public class UserDAO {
 	}
 	
 	public UserBean getUserInfo(String username) throws SQLException {
-		if (username == null || username.isBlank()) {
+		if (username == null || username.trim().isEmpty()) {
 			return null;
 		}
 		UserBean user = new UserBean();
@@ -55,7 +55,7 @@ public class UserDAO {
 	
 	public boolean checkUserPassword(String username, String password) throws SQLException {
 		boolean checked = false;
-		if (username == null || username.isBlank() || password == null || password.isBlank()) {
+		if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
 			return checked;
 		}
 		String query = "SELECT password FROM user WHERE username = ?";
