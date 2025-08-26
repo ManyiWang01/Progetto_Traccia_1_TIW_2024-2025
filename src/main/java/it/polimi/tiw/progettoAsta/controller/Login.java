@@ -16,6 +16,8 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+
 import it.polimi.tiw.progettoAsta.dao.UserDAO;
 
 /**
@@ -56,9 +58,12 @@ public class Login extends HttpServlet {
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
 		HttpSession session = request.getSession(true);
-		Cookie cookie = new Cookie(session.getId(), username);
-		response.addCookie(cookie);
-		response.sendRedirect("/AstaHTML/Home");
+		session.setAttribute("username", username);
+		session.setAttribute("success_log", true);
+		Timestamp now = new Timestamp(System.currentTimeMillis());
+		now.setNanos(0);
+		session.setAttribute("login_timestamp", now);
+		response.sendRedirect("Home");
 //		if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
 //			request.setAttribute("error", "Nome utente e password sono obbligatori");
 //			RequestDispatcher dispatcher = request.getRequestDispatcher("/login.jsp");
@@ -76,11 +81,9 @@ public class Login extends HttpServlet {
 //			else {
 //				// salvare session id nella db
 //				HttpSession session = request.getSession(true);
-//				if (session.isNew()) {
-//					Cookie cookie = new Cookie(session.getId(), username);
-//					response.addCookie(cookie);
-//				}
-//				response.sendRedirect("/Home.jsp");
+	//			session.setAttribute("username", username);
+	//			session.setAttribute("success_log", true);
+	//			response.sendRedirect("/AstaHTML/Home");
 //			}
 //		} catch (SQLException e) {
 //			e.printStackTrace();

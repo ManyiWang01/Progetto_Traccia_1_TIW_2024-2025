@@ -67,7 +67,7 @@ public class OfferDAO {
 		if (id_auction < 0) {
 			return null;
 		}
-		OfferBean maxOffer = new OfferBean();
+		OfferBean maxOffer = null;
 		String query = "SELECT * FROM offerta WHERE id_asta = ? ORDER BY p_offerta DESC LIMIT 1";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
@@ -76,6 +76,7 @@ public class OfferDAO {
 			pstatement.setInt(1, id_auction);
 			result = pstatement.executeQuery();
 			while (result.next()) {
+				maxOffer = new OfferBean();
 				maxOffer.setId_asta(id_auction);
 				maxOffer.setUser(result.getString("username"));
 				maxOffer.setData_offerta(result.getTimestamp("data_offerta"));
