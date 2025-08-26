@@ -10,13 +10,12 @@
     <body>
         <h1>Login Asta On-Line</h1>
         <form action="login" method="post">
-            Nome Utente:
-            <input type="text" name="username" required><br>
-            Password:
-            <input type="password" name="password" required><br>
+            Nome Utente:<input type="text" name="username" value="${sessionScope.username }" required><br>
+            Password:<input type="password" name="password" required><br>
             <input type="submit" name="loginButton" value="Login">
-            <c:if test="${not empty error}">
-            	<p style="color : red;">${error}</p>
+            <c:if test="${not empty sessionScope.error}">
+            	<p style="color : red;">${sessionScope.error}</p>
+            	<c:remove var="error" scope="session"/>
             </c:if>
         </form>
     </body>

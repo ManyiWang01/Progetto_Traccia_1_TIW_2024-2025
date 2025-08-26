@@ -25,6 +25,7 @@ public class UserDAO {
 		PreparedStatement pstatement = null;
 		try {
 			pstatement = connection.prepareStatement(query);
+			pstatement.setString(1, username);
 			result = pstatement.executeQuery();
 			while (result.next()) {
 				user.setUsername(result.getString("username"));

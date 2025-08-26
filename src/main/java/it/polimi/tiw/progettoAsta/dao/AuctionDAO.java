@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +25,7 @@ public class AuctionDAO {
 		if (id_asta < 0) {
 			return null;
 		}
-		String query = "SELECT * FROM auction WHERE id_asta = ?";
+		String query = "SELECT * FROM asta WHERE id_asta = ?";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
 		AuctionBean auction = new AuctionBean();
@@ -65,7 +67,7 @@ public class AuctionDAO {
 		return auction;
 	}
 	
- 	public int createAuction(BigDecimal p_iniziale, int min_rialzo, Timestamp data_scadenza, String user) throws SQLException {
+ 	public int createAuction(BigDecimal p_iniziale, int min_rialzo, String data_scadenza, String user) throws SQLException {
 		int code = 0;
 		int last_added_id = -1;
 		if (p_iniziale == null || p_iniziale.compareTo(new BigDecimal("0")) < 0 || min_rialzo < 0 ||
@@ -81,7 +83,7 @@ public class AuctionDAO {
 			add_pstatement = connection.prepareStatement(add_query);
 			add_pstatement.setBigDecimal(1, p_iniziale);
 			add_pstatement.setInt(2, min_rialzo);
-			add_pstatement.setTimestamp(3, data_scadenza);
+			add_pstatement.setTimestamp(3, Timestamp.valueOf(data_scadenza));
 			add_pstatement.setString(4, user);
 			code = add_pstatement.executeUpdate();
 		}
@@ -130,7 +132,7 @@ public class AuctionDAO {
 	}
 	
 	public void endAuction(int id_asta, String winner) throws SQLException {
-		if (id_asta < 0 || winner == null || winner.trim().isEmpty()) {
+		if (id_asta < 0 || winner.trim().isEmpty()) {
 			return;
 		}
 		String query = "UPDATE asta SET status = 1, winner = ? WHERE id_asta = ?";
@@ -159,7 +161,7 @@ public class AuctionDAO {
 			return null;
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();
-		String query = "SELECT * FROM auction WHERE username = ?";
+		String query = "SELECT * FROM asta WHERE username = ? ORDER BY data_scadenza ASC";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
 		try {
@@ -207,7 +209,7 @@ public class AuctionDAO {
 			return null;
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();
-		String query = "SELECT * FROM auction WHERE winner = ?";
+		String query = "SELECT * FROM asta WHERE winner = ?";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
 		try {
@@ -250,14 +252,13 @@ public class AuctionDAO {
 		return auctionList;
 	}
 	
-  	public List<AuctionBean> findAuctionByKey(String key) throws SQLException {
-		if (key == null || key.trim().isEmpty()) {
+  	public List<AuctionBean> findAuctionByKey(String key, String username) throws SQLException {
+		if (key == null || key.trim().isEmpty() || username == null || username.trim().isEmpty()) {
 			return null;
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();
-		Timestamp now = new Timestamp(System.currentTimeMillis());
-		now.setNanos(0);
-		String query = "SELECT * FROM asta WHERE DATE(asta.scadenza) > ? AND status = 0";
+		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
+		String query = "SELECT * FROM asta WHERE DATE(asta.data_scadenza) > ? AND status = 0 AND username <> ? ORDER BY data_scadenza DESC";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
 		String article_query = "SELECT id_articolo, nome, descrizione FROM articolo WHERE id_asta = ? AND id_articolo IS NOT NULL";
@@ -266,6 +267,7 @@ public class AuctionDAO {
 		try {
 			pstatement = connection.prepareStatement(query);
 			pstatement.setTimestamp(1, now);
+			pstatement.setString(2, username);
 			result = pstatement.executeQuery();
 			while (result.next()) {
 				try {
@@ -281,8 +283,8 @@ public class AuctionDAO {
 							auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 							auction.setCreator(result.getString("username"));
 							auction.setStatus(result.getBoolean("status"));
-							auction.setWinner(null);
-							auctionList.add(auction);
+							auction.setWinner(result.getString("winner"));
+							auctionList.addLast(auction);
 							break;
 						}
 					}

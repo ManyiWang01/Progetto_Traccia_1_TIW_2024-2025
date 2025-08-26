@@ -52,7 +52,7 @@ public class ArticleDAO {
 			return;
 		}
 		StringBuilder queryString = new StringBuilder();
-		queryString.append("UPDATE article SET id_auction = ? WHERE id_article IN (");
+		queryString.append("UPDATE articolo SET id_asta = ? WHERE id_articolo IN (");
 		for (int i = 0; i < id_article_list.size(); i++) {
 			if(i > 0) {
 				queryString.append(",");
@@ -176,5 +176,51 @@ public class ArticleDAO {
 		return articleList;
 	}
 	
- 
+	public BigDecimal computeInitialPrice(List<Integer> idList) throws SQLException {
+		BigDecimal prezzo = null;
+		if (idList == null || idList.isEmpty()) {
+			return prezzo;
+		}
+		StringBuilder query = new StringBuilder("SELECT * FROM articolo WHERE id_articolo IN (");
+		for (int i = 0; i < idList.size(); i++) {
+			if (i > 0) query.append(",");
+			query.append("?");
+		}
+		query.append(")");
+		PreparedStatement pstatement = null;
+		ResultSet result = null;
+		try {
+			pstatement = connection.prepareStatement(query.toString());
+			for (int i = 0; i < idList.size(); i++) {
+				pstatement.setInt(i + 1, idList.get(i));
+			}
+			result = pstatement.executeQuery();
+			prezzo = new BigDecimal("0");
+			while (result.next()) {
+				prezzo = prezzo.add(result.getBigDecimal("prezzo"));
+			}
+		}
+		catch (SQLException e) {
+			throw new SQLException(e);
+		}
+		finally {
+			try {
+				if (result != null) {
+					result.close();
+				}
+			}
+			catch (SQLException e1) {
+				throw new SQLException("Cannot close result");
+			}
+			try {
+				if (pstatement != null) {
+					pstatement.close();
+				}
+			}
+			catch (SQLException e2) {
+				throw new SQLException("Cannot close statement");
+			}
+		}
+		return prezzo;
+	}
 }

@@ -1,11 +1,22 @@
 package it.polimi.tiw.progettoAsta.controller;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.UnavailableException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.List;
+
+import it.polimi.tiw.progettoAsta.bean.AuctionBean;
+import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 
 /**
  * Servlet implementation class FindAuctionByKey
@@ -13,7 +24,7 @@ import java.io.IOException;
 @WebServlet("/FindAuctionByKey")
 public class FindAuctionByKey extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+    private Connection connection;
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -21,21 +32,52 @@ public class FindAuctionByKey extends HttpServlet {
         super();
         // TODO Auto-generated constructor stub
     }
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: ").append(request.getContextPath());
+    
+    public void init() throws ServletException {
+		try {
+			ServletContext context = getServletContext();
+			String driver = context.getInitParameter("dbDriver");
+			String url = context.getInitParameter("dbUrl");
+			String user = context.getInitParameter("dbUser");
+			String password = context.getInitParameter("dbPassword");
+			Class.forName(driver);
+			connection = DriverManager.getConnection(url, user, password);
+		} catch (ClassNotFoundException e) {
+			throw new UnavailableException("Can't load database driver");
+		} catch (SQLException e) {
+			throw new UnavailableException("Couldn't get db connection");
+		}
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
+		HttpSession session = request.getSession(false);
+		if (session == null || session.getAttribute("success_log") == null) {
+			response.sendRedirect("/AstaHTML/");
+			return;
+			// redirect to login page
+		}
+		String key = request.getParameter("searchBar");
+		if (key == null || key.trim().isEmpty()) {
+			session.setAttribute("searchError", "Inserisci una parola chiave da ricercare");
+			response.sendRedirect("/AstaHTML/Acquisto");
+			return;
+		}
+		String username = (String) session.getAttribute("username");
+		AuctionDAO auctionDao = new AuctionDAO(connection);
+		List<AuctionBean> auctionList = null;
+		try {
+			auctionList = auctionDao.findAuctionByKey(key, username);
+			session.setAttribute("openAuctionList", auctionList);
+		}
+		catch (SQLException e) {
+			session.setAttribute("searchError", "Error lato server");
+			response.sendRedirect("/AstaHTML/Acquisto");
+			return;
+		}
+		response.sendRedirect("/AstaHTML/Acquisto");
 	}
 
 }

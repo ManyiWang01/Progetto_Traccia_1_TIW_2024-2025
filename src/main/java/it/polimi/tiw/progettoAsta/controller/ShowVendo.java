@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import java.util.Map;
 
 import it.polimi.tiw.progettoAsta.bean.ArticleBean;
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
+import it.polimi.tiw.progettoAsta.bean.OfferBean;
 import it.polimi.tiw.progettoAsta.dao.ArticleDAO;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 import it.polimi.tiw.progettoAsta.dao.OfferDAO;
@@ -94,12 +96,13 @@ public class ShowVendo extends HttpServlet {
 				int id_asta = auction.getId_asta();
 				try {
 					articleMap.put(id_asta, articleDao.findArticleByAuction(id_asta));
-					offerMap.put(id_asta, offerDao.findMaxOffer(id_asta).getP_offerta());
+					OfferBean maxOffer = offerDao.findMaxOffer(id_asta);
+					offerMap.put(id_asta, (maxOffer == null ? null : maxOffer.getP_offerta()));
 					Instant endTime = auction.getData_scadenza().toInstant();
 					Duration diff = Duration.between(loginTime, endTime);
 					long remainingDays = diff.toDays();
 					int remainingHours = diff.toHoursPart();
-					remainingTime.put(id_asta, remainingDays + "gg e " + remainingHours + "h");
+					remainingTime.put(id_asta, remainingDays + "gg " + remainingHours + "h");
 					if (auction.isStatus()) {
 						closedAuction.addLast(auction);
 					}
@@ -119,9 +122,11 @@ public class ShowVendo extends HttpServlet {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
+		request.setAttribute("timeNow", now);
 		request.setAttribute("openAuctionList", openAuction);
 		request.setAttribute("closedAuctionList", closedAuction);
-		request.setAttribute("remainingTimeMap", remainingTime);
+		request.setAttribute("remainingTime", remainingTime);
 		request.setAttribute("articleMap", articleMap);
 		request.setAttribute("offerMap", offerMap);
 		request.setAttribute("freeArticle", freeArticle);

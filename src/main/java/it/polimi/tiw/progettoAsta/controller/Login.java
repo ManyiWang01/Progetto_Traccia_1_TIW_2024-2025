@@ -58,39 +58,35 @@ public class Login extends HttpServlet {
 		String username = request.getParameter("username");
 		String password = request.getParameter("password");
 		HttpSession session = request.getSession(true);
-		session.setAttribute("username", username);
-		session.setAttribute("success_log", true);
-		Timestamp now = new Timestamp(System.currentTimeMillis());
-		now.setNanos(0);
-		session.setAttribute("login_timestamp", now);
-		response.sendRedirect("Home");
-//		if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+		if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
 //			request.setAttribute("error", "Nome utente e password sono obbligatori");
-//			RequestDispatcher dispatcher = request.getRequestDispatcher("/login.jsp");
+//			RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/login.jsp");
 //	        dispatcher.forward(request, response);
-//	        return;
-//		}
-//		UserDAO userDao = new UserDAO(connection);
-//		try {
-//			if (!userDao.checkUserPassword(username, password)) {
-//				request.setAttribute("error", "Nome utente o password errati");
-//				RequestDispatcher dispatcher = request.getRequestDispatcher("/login.jsp");
-//		        dispatcher.forward(request, response);
-//		        return;
-//			}
-//			else {
-//				// salvare session id nella db
-//				HttpSession session = request.getSession(true);
-	//			session.setAttribute("username", username);
-	//			session.setAttribute("success_log", true);
-	//			response.sendRedirect("/AstaHTML/Home");
-//			}
-//		} catch (SQLException e) {
-//			e.printStackTrace();
-//			request.setAttribute("error", "Errore interno del server");
-//	        RequestDispatcher dispatcher = request.getRequestDispatcher("/login.jsp");
-//	        dispatcher.forward(request, response);
-//		}
+			session.setAttribute("error", "Nome utente e password sono obbligatori");
+			response.sendRedirect("/AstaHTML/");
+	        return;
+		}
+		UserDAO userDao = new UserDAO(connection);
+		try {
+			if (!userDao.checkUserPassword(username, password)) {
+				session.setAttribute("username", username);
+				session.setAttribute("error", "Nome utente o password errati");
+				response.sendRedirect("/AstaHTML/");
+		        return;
+			}
+			else {
+				session.setAttribute("username", username);
+				session.setAttribute("success_log", true);
+				Timestamp now = new Timestamp(System.currentTimeMillis());
+				now.setNanos(0);
+				session.setAttribute("login_timestamp", now);
+				response.sendRedirect("/AstaHTML/Home");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			session.setAttribute("error", "Error lato server");
+			response.sendRedirect("/AstaHTML/");
+		}
 	}
 	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
