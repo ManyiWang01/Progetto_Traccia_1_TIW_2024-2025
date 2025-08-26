@@ -16,6 +16,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -83,13 +86,20 @@ public class ShowVendo extends HttpServlet {
 		List<AuctionBean> closedAuction = new ArrayList<>();
 		Map<Integer, List<ArticleBean>> articleMap = new HashMap<>();
 		Map<Integer, BigDecimal> offerMap = new HashMap<>();
+		Map<Integer, String> remainingTime = new HashMap<>();
 		List<ArticleBean> freeArticle = null;
+		Instant loginTime = ((Timestamp) session.getAttribute("login_timestamp")).toInstant();
 		if (auctionList != null) {
 			for (AuctionBean auction : auctionList) {
 				int id_asta = auction.getId_asta();
 				try {
 					articleMap.put(id_asta, articleDao.findArticleByAuction(id_asta));
 					offerMap.put(id_asta, offerDao.findMaxOffer(id_asta).getP_offerta());
+					Instant endTime = auction.getData_scadenza().toInstant();
+					Duration diff = Duration.between(loginTime, endTime);
+					long remainingDays = diff.toDays();
+					int remainingHours = diff.toHoursPart();
+					remainingTime.put(id_asta, remainingDays + "gg e " + remainingHours + "h");
 					if (auction.isStatus()) {
 						closedAuction.addLast(auction);
 					}
@@ -111,7 +121,7 @@ public class ShowVendo extends HttpServlet {
 		}
 		request.setAttribute("openAuctionList", openAuction);
 		request.setAttribute("closedAuctionList", closedAuction);
-		request.setAttribute("loginTimestamp", session.getAttribute("login_timestamp"));
+		request.setAttribute("remainingTimeMap", remainingTime);
 		request.setAttribute("articleMap", articleMap);
 		request.setAttribute("offerMap", offerMap);
 		request.setAttribute("freeArticle", freeArticle);
