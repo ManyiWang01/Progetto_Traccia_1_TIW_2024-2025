@@ -1,5 +1,6 @@
 package it.polimi.tiw.progettoAsta.dao;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -33,7 +34,7 @@ public class AuctionDAO {
 			while (result.next()) {
 				auction.setId_asta(result.getInt("id_asta"));
 				auction.setP_iniziale(result.getFloat("p_iniziale"));
-				auction.setMin_rialzo(result.getFloat("min_rialzo"));
+				auction.setMin_rialzo(result.getInt("min_rialzo"));
 				auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 				auction.setCreator(result.getString("username"));
 				auction.setStatus(result.getBoolean("status"));
@@ -64,7 +65,7 @@ public class AuctionDAO {
 		return auction;
 	}
 	
- 	public int createAuction(float p_iniziale, float min_rialzo, Timestamp data_scadenza, String user) throws SQLException {
+ 	public int createAuction(float p_iniziale, int min_rialzo, Timestamp data_scadenza, String user) throws SQLException {
 		int code = 0;
 		int last_added_id = -1;
 		if (p_iniziale < 0 || min_rialzo < 0 || data_scadenza == null || user == null || user.isBlank()) {
@@ -77,8 +78,8 @@ public class AuctionDAO {
 		Statement last_added_statement = null;
 		try {
 			add_pstatement = connection.prepareStatement(add_query);
-			add_pstatement.setFloat(1, p_iniziale);
-			add_pstatement.setFloat(2, min_rialzo);
+			add_pstatement.setBigDecimal(1, BigDecimal.valueOf(p_iniziale));
+			add_pstatement.setInt(2, min_rialzo);
 			add_pstatement.setTimestamp(3, data_scadenza);
 			add_pstatement.setString(4, user);
 			code = add_pstatement.executeUpdate();
@@ -153,10 +154,10 @@ public class AuctionDAO {
 	}
 	
 	public List<AuctionBean> findAuctionByCreator(String username) throws SQLException {
-		List<AuctionBean> auctionList = new ArrayList<>();
 		if (username == null || username.isBlank()) {
-			return auctionList;
+			return null;
 		}
+		List<AuctionBean> auctionList = new ArrayList<>();
 		String query = "SELECT * FROM auction WHERE username = ?";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
@@ -168,7 +169,7 @@ public class AuctionDAO {
 				AuctionBean auction = new AuctionBean();
 				auction.setId_asta(result.getInt("id_asta"));
 				auction.setP_iniziale(result.getFloat("p_iniziale"));
-				auction.setMin_rialzo(result.getFloat("min_rialzo"));
+				auction.setMin_rialzo(result.getInt("min_rialzo"));
 				auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 				auction.setCreator(result.getString("username"));
 				auction.setStatus(result.getBoolean("status"));
@@ -201,10 +202,10 @@ public class AuctionDAO {
 	}
 	
 	public List<AuctionBean> findAuctionByWinner(String winner) throws SQLException {
-		List<AuctionBean> auctionList = new ArrayList<>();
 		if (winner == null || winner.isBlank()) {
-			return auctionList;
+			return null;
 		}
+		List<AuctionBean> auctionList = new ArrayList<>();
 		String query = "SELECT * FROM auction WHERE winner = ?";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
@@ -216,7 +217,7 @@ public class AuctionDAO {
 				AuctionBean auction = new AuctionBean();
 				auction.setId_asta(result.getInt("id_asta"));
 				auction.setP_iniziale(result.getFloat("p_iniziale"));
-				auction.setMin_rialzo(result.getFloat("min_rialzo"));
+				auction.setMin_rialzo(result.getInt("min_rialzo"));
 				auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 				auction.setCreator(result.getString("username"));
 				auction.setStatus(result.getBoolean("status"));
@@ -249,10 +250,10 @@ public class AuctionDAO {
 	}
 	
   	public List<AuctionBean> findAuctionByKey(String key) throws SQLException {
-		List<AuctionBean> auctionList = new ArrayList<>();
 		if (key == null || key.isBlank()) {
-			return auctionList;
+			return null;
 		}
+		List<AuctionBean> auctionList = new ArrayList<>();
 		Timestamp now = new Timestamp(System.currentTimeMillis());
 		now.setNanos(0);
 		String query = "SELECT * FROM asta WHERE DATE(asta.scadenza) > ? AND status = 0";
@@ -275,7 +276,7 @@ public class AuctionDAO {
 							AuctionBean auction = new AuctionBean();
 							auction.setId_asta(result.getInt("id_asta"));
 							auction.setP_iniziale(result.getFloat("p_iniziale"));
-							auction.setMin_rialzo(result.getFloat("min_rialzo"));
+							auction.setMin_rialzo(result.getInt("min_rialzo"));
 							auction.setData_scadenza(result.getTimestamp("data_scadenza"));
 							auction.setCreator(result.getString("username"));
 							auction.setStatus(result.getBoolean("status"));

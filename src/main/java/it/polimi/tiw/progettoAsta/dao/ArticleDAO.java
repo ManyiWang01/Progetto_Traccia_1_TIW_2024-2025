@@ -1,5 +1,6 @@
 package it.polimi.tiw.progettoAsta.dao;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,6 +18,10 @@ public class ArticleDAO {
 	}
 	
 	public void addArticle(String nome_articolo, String descrizione, String url_immagine, float prezzo, String username) throws SQLException {
+		if (nome_articolo == null || nome_articolo.isBlank() || descrizione == null || descrizione.isBlank() || 
+				url_immagine == null || url_immagine.isBlank() || prezzo < 0 || username == null || username.isBlank()) {
+			return;
+		}
 		String query = "INSERT INTO asta.articolo (nome, descrizione, immagine, prezzo, username, id_asta) VALUES (?, ?, ?, ?, ?, NULL)";
 		PreparedStatement pstatement = null;
 		try {
@@ -24,7 +29,7 @@ public class ArticleDAO {
 			pstatement.setString(1, nome_articolo);
 			pstatement.setString(2, descrizione);
 			pstatement.setString(3, url_immagine);
-			pstatement.setFloat(4, prezzo);
+			pstatement.setBigDecimal(4, BigDecimal.valueOf(prezzo));
 			pstatement.setString(5, username);
 			pstatement.executeUpdate();
 		}
@@ -78,16 +83,15 @@ public class ArticleDAO {
 			}
 		}
 	}
-	
-	
+
 	public List<ArticleBean> findArticleByUser(String user) throws SQLException {
-		List<ArticleBean> articleList = new ArrayList<>();
-		if (user == null || user.equals("")) {
-			return articleList;
+		if (user == null || user.isBlank()) {
+			return null;
 		}
 		String query = "SELECT * FROM articolo WHERE id_asta IS NULL AND username = ?";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
+		List<ArticleBean> articleList = new ArrayList<>();
 		try {
 			pstatement = connection.prepareStatement(query);
 			pstatement.setString(1, user);
@@ -127,6 +131,9 @@ public class ArticleDAO {
 	}
 	
 	public List<ArticleBean> findArticleByAuction(int id_auction) throws SQLException {
+		if (id_auction < 0) {
+			return null;
+		}
 		List<ArticleBean> articleList = new ArrayList<>();
 		String query = "SELECT * FROM articolo WHERE id_asta = ?";
 		ResultSet result = null;
