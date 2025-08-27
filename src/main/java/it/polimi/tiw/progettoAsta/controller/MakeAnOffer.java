@@ -76,6 +76,15 @@ public class MakeAnOffer extends HttpServlet {
 			session.setAttribute("offertaError", "Error lato server");
 		}
 		response.sendRedirect("/AstaHTML/Offerta?id=" + id);
+		
+	}
+	public void destroy() {
+		try {
+			if (connection != null) {
+				connection.close();
+			}
+		} catch (SQLException e) {
+		}
 	}
 
 }

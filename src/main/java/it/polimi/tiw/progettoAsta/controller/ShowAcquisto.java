@@ -100,5 +100,13 @@ public class ShowAcquisto extends HttpServlet {
 		request.setAttribute("winnedArticle", winnedArticleMap);
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/acquistoPage.jsp");
 		dispatcher.forward(request, response);
-	} 
+	}
+	public void destroy() {
+		try {
+			if (connection != null) {
+				connection.close();
+			}
+		} catch (SQLException e) {
+		}
+	}
 }

@@ -90,5 +90,12 @@ public class FindAuctionByKey extends HttpServlet {
 		}
 		response.sendRedirect("/AstaHTML/Acquisto");
 	}
-
+	public void destroy() {
+		try {
+			if (connection != null) {
+				connection.close();
+			}
+		} catch (SQLException e) {
+		}
+	}
 }

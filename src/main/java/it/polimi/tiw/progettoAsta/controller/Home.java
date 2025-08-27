@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 
 /**
  * Servlet implementation class Home
@@ -53,5 +54,5 @@ public class Home extends HttpServlet {
 		out.println("</body>");
 		out.println("</html>");
 	}
-
+	
 }

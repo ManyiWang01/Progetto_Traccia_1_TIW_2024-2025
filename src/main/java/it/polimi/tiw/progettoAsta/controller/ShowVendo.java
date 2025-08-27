@@ -133,5 +133,13 @@ public class ShowVendo extends HttpServlet {
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/vendoPage.jsp");
 		dispatcher.forward(request, response);
 	}
+	public void destroy() {
+		try {
+			if (connection != null) {
+				connection.close();
+			}
+		} catch (SQLException e) {
+		}
+	}
 
 }
