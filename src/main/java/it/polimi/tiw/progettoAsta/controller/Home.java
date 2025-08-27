@@ -45,11 +45,11 @@ public class Home extends HttpServlet {
 		out.println("</head>");
 		out.println("<body>");
 		out.println("<h1>WELCOME to your personal page</h1>");
-		out.println("<h3>You are logged in as ");
+		out.println("<h2>You are logged in as ");
 		out.println(session.getAttribute("username"));
-		out.println("</h3>");
-		out.println("<a href=\"/AstaHTML/Vendo\">Vendo Page</a><br>");
-		out.println("<a href=\"/AstaHTML/Acquisto\">Acquisto Page</a>");
+		out.println("</h2>");
+		out.println("<h4><a href=\"/AstaHTML/Vendo\">Vendo Page</a></h4>");
+		out.println("<h4><a href=\"/AstaHTML/Acquisto\">Acquisto Page</a></h4>");
 		out.println("</body>");
 		out.println("</html>");
 	}

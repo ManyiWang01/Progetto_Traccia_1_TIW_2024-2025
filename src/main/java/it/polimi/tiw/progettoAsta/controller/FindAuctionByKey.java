@@ -70,9 +70,20 @@ public class FindAuctionByKey extends HttpServlet {
 		List<AuctionBean> auctionList = null;
 		try {
 			auctionList = auctionDao.findAuctionByKey(key, username);
-			session.setAttribute("openAuctionList", auctionList);
+			if (auctionList == null) {
+				session.setAttribute("searchError", "Error lato server");
+				response.sendRedirect("/AstaHTML/Acquisto");
+				return;
+			}
+			else if (auctionList.isEmpty()) {
+				session.setAttribute("emptyError", "Nessun'asta trovata con parola chiave " + request.getParameter("searchBar"));
+			}
+			else {
+				session.setAttribute("openAuctionList", auctionList);
+			}
 		}
 		catch (SQLException e) {
+			e.printStackTrace();
 			session.setAttribute("searchError", "Error lato server");
 			response.sendRedirect("/AstaHTML/Acquisto");
 			return;

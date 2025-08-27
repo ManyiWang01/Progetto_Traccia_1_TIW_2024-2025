@@ -18,7 +18,7 @@
         		Descrizione:<br> <textarea name="descrizione" rows="4" cols="30" required>${sessionScope.descrizione }</textarea><br>
         		<input type="submit" value="Aggiungi"/>
         		<c:if test="${not empty sessionScope.addArticleError }">
-        			<label style="color : red;">"${sessionScope.addArticleError }"</label>
+        			<p style="color : red;">${sessionScope.addArticleError }</p>
         			<c:remove var="addArticleError" scope="session"/>
         		</c:if>
        			<c:remove var="nome" scope="session"/>
@@ -48,6 +48,7 @@
 	        			<c:out value="Non ci sono articoli liberi"/>
 	        		</c:otherwise>
         		</c:choose>
+        		<br>
         		Rialzo Minimo(EUR): <input type="number" step="1" name="rialzo_minimo" value="${sessionScope.rialzoMinimo }" min="1" required/><br>
         		Scadenza:
         		<c:choose> 
@@ -61,7 +62,7 @@
         		<br>
         		<input type="submit" value="Crea"/>
         		<c:if test="${not empty sessionScope.astaError }">
-        			<label style="color : red;">"${sessionScope.astaError }"</label>
+        			<p style="color : red;">${sessionScope.astaError }</p>
         			<c:remove var="astaError" scope="session"/>
         		</c:if>
         		<c:remove var="rialzoMinimo" scope="session"/>

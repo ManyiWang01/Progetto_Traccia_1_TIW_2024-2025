@@ -23,7 +23,7 @@ public class OfferDAO {
 			return null;
 		}
 		List<OfferBean> offerList = new ArrayList<>();
-		String query = "SELECT username, data_offerta, p_offerta FROM offerta WHERE id_asta = ? ORDER BY p_offerta DESC";
+		String query = "SELECT username, data_offerta, p_offerta FROM offerta WHERE id_asta = ? ORDER BY data_offerta DESC";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
 		try {

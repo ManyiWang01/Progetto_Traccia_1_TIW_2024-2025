@@ -258,10 +258,10 @@ public class AuctionDAO {
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();
 		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
-		String query = "SELECT * FROM asta WHERE DATE(asta.data_scadenza) > ? AND status = 0 AND username <> ? ORDER BY data_scadenza DESC";
+		String query = "SELECT * FROM asta WHERE data_scadenza > ? AND status = false AND username <> ? ORDER BY data_scadenza DESC";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
-		String article_query = "SELECT id_articolo, nome, descrizione FROM articolo WHERE id_asta = ? AND id_articolo IS NOT NULL";
+		String article_query = "SELECT id_articolo, nome, descrizione FROM articolo WHERE id_asta = ? AND id_asta IS NOT NULL";
 		ResultSet article_result = null;
 		PreparedStatement article_pstatement = null;
 		try {
@@ -275,7 +275,7 @@ public class AuctionDAO {
 					article_pstatement.setInt(1, result.getInt("id_asta"));
 					article_result = article_pstatement.executeQuery();
 					while (article_result.next()) {
-						if (article_result.getString("nome").contains(key) || article_result.getString("descizione").contains(key)) {
+						if (article_result.getString("nome").contains(key) || article_result.getString("descrizione").contains(key)) {
 							AuctionBean auction = new AuctionBean();
 							auction.setId_asta(result.getInt("id_asta"));
 							auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
