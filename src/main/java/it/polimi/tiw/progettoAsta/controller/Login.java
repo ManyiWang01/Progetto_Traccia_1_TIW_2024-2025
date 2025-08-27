@@ -59,9 +59,6 @@ public class Login extends HttpServlet {
 		String password = request.getParameter("password");
 		HttpSession session = request.getSession(true);
 		if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-//			request.setAttribute("error", "Nome utente e password sono obbligatori");
-//			RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/login.jsp");
-//	        dispatcher.forward(request, response);
 			session.setAttribute("error", "Nome utente e password sono obbligatori");
 			response.sendRedirect("/AstaHTML/");
 	        return;
@@ -89,8 +86,17 @@ public class Login extends HttpServlet {
 		}
 	}
 	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/login.jsp");
-        dispatcher.forward(request, response);
+//	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+//		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/login.jsp");
+//        dispatcher.forward(request, response);
+//	}
+	
+	public void destroy() {
+		try {
+			if (connection != null) {
+				connection.close();
+			}
+		} catch (SQLException e) {
+		}
 	}
 }

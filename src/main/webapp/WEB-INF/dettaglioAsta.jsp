@@ -20,6 +20,7 @@
 	        				<td> <c:out value="${asta.data_scadenza }"/> </td>
 	        			</tr>
         		</table>
+        		<br>
         		<table>
         			<tr> <td>ID Articolo</td> <td>Nome Articolo</td></tr>
 	        		<c:forEach var="article" items="${articoli}">
@@ -29,6 +30,7 @@
 	        			</tr>
 	        		</c:forEach>
         		</table>
+        		<br>
         		<c:choose>
         			<c:when test="${asta.status == false }">
         				<table>
@@ -46,6 +48,7 @@
 		        				<c:otherwise> <tr> <td><c:out value="Non ci sono offerte"/></td> </tr> </c:otherwise>
 		        			</c:choose>
 		        		</table>
+		        		<br>
 		        		<form action="EndAuction?id=${asta.id_asta }" method="get">
 		        			<button type="submit" >CHIUDI</button>
 		        		</form>
