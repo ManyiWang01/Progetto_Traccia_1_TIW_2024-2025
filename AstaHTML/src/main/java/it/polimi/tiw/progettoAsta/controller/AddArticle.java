@@ -74,14 +74,34 @@ public class AddArticle extends HttpServlet {
 				session.setAttribute("immagine", immagine);
 			}
 			if (prezzo != null && !prezzo.trim().isEmpty()) {
-				session.setAttribute("prezzo", prezzo);
+				BigDecimal price = null;
+				try {				
+					price = new BigDecimal(prezzo);
+					session.setAttribute("prezzo", prezzo);
+				}
+				catch (NumberFormatException n) {
+					session.setAttribute("addArticleError", "Campo prezzo format error");
+					response.sendRedirect("/AstaHTML/Vendo");
+					return;
+				}
 			}
 			session.setAttribute("addArticleError", "Tutti i campi devono essere riempiti");
+			response.sendRedirect("/AstaHTML/Vendo");
+			return;
 		}
 		else {
 			ArticleDAO articleDao = new ArticleDAO(connection);
+			BigDecimal price = null;
+			try {				
+				price = new BigDecimal(prezzo);
+			}
+			catch (NumberFormatException n) {
+				session.setAttribute("addArticleError", "Error formato prezzo");
+				response.sendRedirect("/AstaHTML/Vendo");
+				return;
+			}
 			try {
-				articleDao.addArticle(nome, descrizione, immagine, new BigDecimal(prezzo), (String) session.getAttribute("username"));
+				articleDao.addArticle(nome, descrizione, immagine, price, (String) session.getAttribute("username"));
 			}
 			catch (SQLException e) {
 				e.printStackTrace();
@@ -89,8 +109,9 @@ public class AddArticle extends HttpServlet {
 				response.sendRedirect("/AstaHTML/Vendo");
 				return;
 			}
+			response.sendRedirect("/AstaHTML/Vendo");
+			return;
 		}
-		response.sendRedirect("/AstaHTML/Vendo");
 	}
 	
 	public void destroy() {

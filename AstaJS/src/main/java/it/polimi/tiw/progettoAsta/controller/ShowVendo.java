@@ -4,6 +4,7 @@ import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.UnavailableException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,9 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
+
 import it.polimi.tiw.progettoAsta.bean.ArticleBean;
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
 import it.polimi.tiw.progettoAsta.bean.OfferBean;
+import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.dao.ArticleDAO;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 import it.polimi.tiw.progettoAsta.dao.OfferDAO;
@@ -69,12 +73,8 @@ public class ShowVendo extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("success_log") == null) {
-			response.sendRedirect("/AstaHTML/");
-			return;
-			// redirect to login page
-		}
-		String username = (String) session.getAttribute("username");
+		SessionUser user = (SessionUser) session.getAttribute("user");
+		String username = user.getUsername();
 		AuctionDAO auctionDao = new AuctionDAO(connection);
 		ArticleDAO articleDao = new ArticleDAO(connection);
 		OfferDAO offerDao = new OfferDAO(connection);
@@ -82,15 +82,17 @@ public class ShowVendo extends HttpServlet {
 		try {
 			auctionList = auctionDao.findAuctionByCreator(username);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().println("Error lato server");
+			return;
 		}
 		List<AuctionBean> openAuction = new ArrayList<>();
 		List<AuctionBean> closedAuction = new ArrayList<>();
 		Map<Integer, List<ArticleBean>> articleMap = new HashMap<>();
 		Map<Integer, BigDecimal> offerMap = new HashMap<>();
 		Map<Integer, String> remainingTime = new HashMap<>();
-		List<ArticleBean> freeArticle = null;
-		Instant loginTime = ((Timestamp) session.getAttribute("login_timestamp")).toInstant();
+		List<ArticleBean> freeArticle = new ArrayList<>();
+		Instant loginTime = user.getLoginTime().toInstant();
 		if (auctionList != null) {
 			for (AuctionBean auction : auctionList) {
 				int id_asta = auction.getId_asta();
@@ -110,28 +112,34 @@ public class ShowVendo extends HttpServlet {
 						openAuction.addLast(auction);
 					}
 				} catch (SQLException e) {
-					e.printStackTrace();
+					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+					response.getWriter().println("Error lato server");
+					return;
 				}
 			}
 		}
 		try {
 			freeArticle = articleDao.findArticleByUser(username);
-			if (freeArticle == null) {
-				
-			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().println("Error lato server");
+			return;
 		}
-		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
-		request.setAttribute("timeNow", now);
-		request.setAttribute("openAuctionList", openAuction);
-		request.setAttribute("closedAuctionList", closedAuction);
-		request.setAttribute("remainingTime", remainingTime);
-		request.setAttribute("articleMap", articleMap);
-		request.setAttribute("offerMap", offerMap);
-		request.setAttribute("freeArticle", freeArticle);
-		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/vendoPage.jsp");
-		dispatcher.forward(request, response);
+		
+		Map<String, Object> datiNeccessari = new HashMap<>();
+		datiNeccessari.put("openAuctionList", openAuction);
+		datiNeccessari.put("closedAuctionList", closedAuction);
+		datiNeccessari.put("remainingTimeMap", remainingTime);
+		datiNeccessari.put("articleMap", articleMap);
+		datiNeccessari.put("offerMap", offerMap);
+		datiNeccessari.put("freeArticleList", freeArticle);
+		Gson gson = new Gson();
+		
+		String json = gson.toJson(datiNeccessari);
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		response.getWriter().write(json);
 	}
 	public void destroy() {
 		try {

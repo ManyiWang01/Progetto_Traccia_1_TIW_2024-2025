@@ -16,6 +16,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,10 +65,18 @@ public class CreateAuction extends HttpServlet {
 			return;
 			// redirect to login page
 		}
-		Integer rialzoMinimo = Integer.parseInt(request.getParameter("rialzo_minimo"));
+		Integer rialzoMinimo = null;
+		try {
+			rialzoMinimo = Integer.parseInt(request.getParameter("rialzo_minimo"));
+		}
+		catch (NumberFormatException n) {
+			session.setAttribute("astaError", "Error formato rialzo minimo");
+			response.sendRedirect("/AstaHTML/Vendo");
+			return;
+		}
 		StringBuilder timestamp = new StringBuilder(request.getParameter("date").replace("T", " ")).append(":00");
 		Timestamp scadenza = Timestamp.valueOf(timestamp.toString());
-		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
+		Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
 		String[] articoloIDArray = request.getParameterValues("selectedElements[]");
 		if (rialzoMinimo == null || rialzoMinimo < 0 || scadenza == null || scadenza.before(now) || 
 				articoloIDArray == null || articoloIDArray.length == 0) {
@@ -88,6 +97,11 @@ public class CreateAuction extends HttpServlet {
 					articoloList.add(Integer.parseInt(id));
 				}
 				int lastAuction = auctionDao.createAuction(articleDao.computeInitialPrice(articoloList), rialzoMinimo, scadenza.toString(), (String) session.getAttribute("username"));
+				if (lastAuction == -1) {
+					session.setAttribute("astaError", "Error lato server");
+					response.sendRedirect("/AstaHTML/Vendo");
+					return;
+				}
 				articleDao.updateArticleStatus(lastAuction, articoloList);
 			}
 			catch (SQLException e) {

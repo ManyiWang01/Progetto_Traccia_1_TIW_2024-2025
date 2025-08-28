@@ -15,10 +15,12 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
 import it.polimi.tiw.progettoAsta.bean.OfferBean;
+import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 import it.polimi.tiw.progettoAsta.dao.OfferDAO;
 
@@ -58,39 +60,46 @@ public class EndAuction extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("success_log") == null) {
-			response.sendRedirect("/AstaHTML/");
-			return;
-			// redirect to login page
-		}
-		String id = request.getParameter("id");
+		String id = (String) session.getAttribute("idDettaglio");
+		session.removeAttribute("idDettaglio");
 		if (id == null || id.trim().isEmpty()) {
-			response.sendRedirect("/AstaHTML/Vendo");
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().println("ID non trovato");
 			return;
 		}
 		Integer id_asta = Integer.parseInt(id);
 		AuctionDAO auctionDao = new AuctionDAO(connection);
 		OfferDAO offerDao = new OfferDAO(connection);
-		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
+		Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
 		AuctionBean auction = null;
 		OfferBean offer = null;
 		try {
 			auction = auctionDao.getAuctionById(id_asta);
-			if (auction != null && now.after(auction.getData_scadenza())) {
-				offer = offerDao.findMaxOffer(id_asta);
-				if (offer != null) {
-					auctionDao.endAuction(id_asta, offer.getUser());
+			if (auction != null) {
+				if (now.after(auction.getData_scadenza())) {
+					offer = offerDao.findMaxOffer(id_asta);
+					if (offer != null) {
+						auctionDao.endAuction(id_asta, offer.getUser());
+					}
+					else {
+						auctionDao.endAuction(id_asta, null);
+					}
 				}
 				else {
-					auctionDao.endAuction(id_asta, null);
+					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+					response.getWriter().println("Devi aspettare fino alla scadenza prima di chiudere");
+					session.setAttribute("idDettaglio", id);
+					return;
 				}
 			}
 		}
 		catch (SQLException e) {
-			e.printStackTrace();
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().println("Error lato server");
+			session.setAttribute("idDettaglio", id);
 			return;
 		}
-		response.sendRedirect("/AstaHTML/Vendo");
+		response.setStatus(HttpServletResponse.SC_OK);
 	}
 	public void destroy() {
 		try {

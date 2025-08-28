@@ -49,7 +49,7 @@
 		        			</c:choose>
 		        		</table>
 		        		<br>
-		        		<form action="EndAuction?id=${asta.id_asta }" method="get">
+		        		<form action="EndAuction" method="get">
 		        			<button type="submit" >CHIUDI</button>
 		        		</form>
         			</c:when>

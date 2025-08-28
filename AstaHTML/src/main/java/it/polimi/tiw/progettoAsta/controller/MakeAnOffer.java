@@ -16,8 +16,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
+import it.polimi.tiw.progettoAsta.bean.AuctionBean;
+import it.polimi.tiw.progettoAsta.bean.OfferBean;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 import it.polimi.tiw.progettoAsta.dao.OfferDAO;
 
@@ -63,21 +66,49 @@ public class MakeAnOffer extends HttpServlet {
 			return;
 			// redirect to login page
 		}
-		String id_asta = request.getParameter("id_asta");
+		String id_asta = (String) session.getAttribute("idOfferta");
+		session.removeAttribute("idOfferta");
 		if (id_asta == null || id_asta.trim().isEmpty()) {
 			response.sendRedirect("/AstaHTML/Acquisto");
 			return;
 		}
-		Integer id = Integer.parseInt(id_asta);
-		OfferDAO offerDao = new OfferDAO(connection);
+		Integer id = null;
 		try {
-			offerDao.makeAnOffer(id, (String) session.getAttribute("username"), Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES)), new BigDecimal(request.getParameter("prezzo")));
+			id = Integer.parseInt(id_asta);
+		}
+		catch (NumberFormatException n) {
+			response.sendRedirect("/AstaHTML/Acquisto");
+			return;
+		}
+		OfferDAO offerDao = new OfferDAO(connection);
+		AuctionDAO auctionDao = new AuctionDAO(connection);
+		try {
+			AuctionBean auction = auctionDao.getAuctionById(id);
+			OfferBean maxOffer = offerDao.findMaxOffer(id);
+			BigDecimal price = null;
+			try {
+				price = new BigDecimal(request.getParameter("prezzo"));
+			}
+			catch (NumberFormatException n) {
+				price = null;
+			}
+			if (price == null || auction == null || maxOffer == null || (maxOffer.getP_offerta().add(new BigDecimal(auction.getMin_rialzo()))).compareTo(price) == 1 ) {
+				session.setAttribute("offertaError", "Error lato server");
+				session.setAttribute("idOfferta", id);
+				response.sendRedirect("/AstaHTML/Offerta?id=" + id);
+				return;
+			}
+			Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
+			offerDao.makeAnOffer(id, (String) session.getAttribute("username"), now, price);
 		}
 		catch (SQLException e) {
 			session.setAttribute("offertaError", "Error lato server");
+			session.setAttribute("idOfferta", id);
+			response.sendRedirect("/AstaHTML/Offerta?id=" + id);
+			return;
 		}
+		session.setAttribute("idOfferta", id);
 		response.sendRedirect("/AstaHTML/Offerta?id=" + id);
-		
 	}
 	public void destroy() {
 		try {

@@ -19,6 +19,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -116,13 +117,10 @@ public class ShowVendo extends HttpServlet {
 		}
 		try {
 			freeArticle = articleDao.findArticleByUser(username);
-			if (freeArticle == null) {
-				
-			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
+		Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
 		request.setAttribute("timeNow", now);
 		request.setAttribute("openAuctionList", openAuction);
 		request.setAttribute("closedAuctionList", closedAuction);

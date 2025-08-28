@@ -23,7 +23,7 @@ public class OfferDAO {
 			return null;
 		}
 		List<OfferBean> offerList = new ArrayList<>();
-		String query = "SELECT username, data_offerta, p_offerta FROM offerta WHERE id_asta = ? ORDER BY data_offerta DESC";
+		String query = "SELECT username, data_offerta, p_offerta FROM offerta WHERE id_asta = ? ORDER BY p_offerta DESC, data_offerta DESC";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
 		try {
@@ -68,19 +68,28 @@ public class OfferDAO {
 			return null;
 		}
 		OfferBean maxOffer = null;
-		String query = "SELECT * FROM offerta WHERE id_asta = ? ORDER BY p_offerta DESC LIMIT 1";
+		String query = "SELECT * FROM offerta WHERE id_asta = ? ORDER BY p_offerta DESC, data_offerta DESC LIMIT 1";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
 		try {
 			pstatement = connection.prepareStatement(query);
 			pstatement.setInt(1, id_auction);
 			result = pstatement.executeQuery();
-			while (result.next()) {
+			if (!result.next()) {
 				maxOffer = new OfferBean();
 				maxOffer.setId_asta(id_auction);
-				maxOffer.setUser(result.getString("username"));
-				maxOffer.setData_offerta(result.getTimestamp("data_offerta"));
-				maxOffer.setP_offerta(result.getBigDecimal("p_offerta"));
+				maxOffer.setUser(null);
+				maxOffer.setData_offerta(null);
+				maxOffer.setP_offerta(new BigDecimal("0"));
+			}
+			else {
+				do {
+					maxOffer = new OfferBean();
+					maxOffer.setId_asta(id_auction);
+					maxOffer.setUser(result.getString("username"));
+					maxOffer.setData_offerta(result.getTimestamp("data_offerta"));
+					maxOffer.setP_offerta(result.getBigDecimal("p_offerta"));
+				}while (result.next());
 			}
 		}
 		catch (SQLException e) {

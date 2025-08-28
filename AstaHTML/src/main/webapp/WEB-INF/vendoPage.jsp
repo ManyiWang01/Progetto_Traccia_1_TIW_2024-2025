@@ -80,8 +80,8 @@
 			        			<tr>
 			        				<td> <a href="<c:url value="/DettaglioAsta?id=${id_asta }"/>" >${id_asta}</a> </td>
 			        				<c:set var="offer" value="Non ci sono offerte"/>
-					        		<c:if test="${not empty offerMap[id_asta] }">
-					        			<c:set var="offer" value="${offerMap[id_asta] }"/>
+					        		<c:if test="${not empty offerMap[id_asta] && offerMap[id_asta] != 0}">
+				        				<c:set var="offer" value="${offerMap[id_asta] }"/>
 					        		</c:if>
 						        	<td> <c:out value="${offer }"/> </td>
 						        	<td> <c:out value="${remainingTime[id_asta] }"/> </td>

@@ -70,7 +70,14 @@ public class ShowDettaglioAsta extends HttpServlet {
 			response.sendRedirect("/AstaHTML/Vendo");
 			return;
 		}
-		Integer id_asta = Integer.parseInt(id);
+		Integer id_asta = null;
+		try {
+			id_asta = Integer.parseInt(id);
+		}
+		catch (NumberFormatException n) {
+			response.sendRedirect("/AstaHTML/Vendo");
+			return;
+		}
 		AuctionDAO auctionDao = new AuctionDAO(connection);
 		ArticleDAO articleDao = new ArticleDAO(connection);
 		OfferDAO offerDao = new OfferDAO(connection);
@@ -81,6 +88,10 @@ public class ShowDettaglioAsta extends HttpServlet {
 		UserBean winner = null;
 		try {
 			auction = auctionDao.getAuctionById(id_asta);
+			if (auction == null || !auction.getCreator().equals((String) session.getAttribute("username"))) {
+				response.sendRedirect("/AstaHTML/Vendo");
+				return;
+			}
 			articleList = articleDao.findArticleByAuction(id_asta);
 			if (!auction.isStatus()) {
 				offerList = offerDao.findOfferByAuction(id_asta);
@@ -102,6 +113,7 @@ public class ShowDettaglioAsta extends HttpServlet {
 		}
 		request.setAttribute("asta", auction);
 		request.setAttribute("articoli", articleList);
+		session.setAttribute("idDettaglio", id);
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/dettaglioAsta.jsp");
 		dispatcher.forward(request, response);
 	}

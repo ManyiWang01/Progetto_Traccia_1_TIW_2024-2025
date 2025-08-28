@@ -15,11 +15,16 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.google.gson.Gson;
 
 import it.polimi.tiw.progettoAsta.bean.ArticleBean;
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
 import it.polimi.tiw.progettoAsta.bean.OfferBean;
+import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.bean.UserBean;
 import it.polimi.tiw.progettoAsta.dao.ArticleDAO;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
@@ -60,31 +65,39 @@ public class ShowDettaglioAsta extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("success_log") == null) {
-			response.sendRedirect("/AstaHTML/");
-			return;
-			// redirect to login page
-		}
 		String id = request.getParameter("id");
 		if (id == null || id.trim().isEmpty()) {
-			response.sendRedirect("/AstaHTML/Vendo");
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().println("ID non trovato");
 			return;
 		}
-		Integer id_asta = Integer.parseInt(id);
+		Integer id_asta = null;
+		try {
+			id_asta = Integer.parseInt(id);
+		}
+		catch (NumberFormatException n) {
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().println("ID non trovato");
+			return;
+		}
+		Map<String, Object> datiNeccessari = new HashMap<>();
 		AuctionDAO auctionDao = new AuctionDAO(connection);
-		ArticleDAO articleDao = new ArticleDAO(connection);
 		OfferDAO offerDao = new OfferDAO(connection);
 		AuctionBean auction = null;
-		List<ArticleBean> articleList = null;
 		List<OfferBean> offerList = null;
 		OfferBean maxOffer = null;
 		UserBean winner = null;
 		try {
 			auction = auctionDao.getAuctionById(id_asta);
-			articleList = articleDao.findArticleByAuction(id_asta);
+			if (auction == null || !auction.getCreator().equals(((SessionUser) session.getAttribute("user")).getUsername())) {
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.getWriter().println("Error lato server");
+				return;
+			}
 			if (!auction.isStatus()) {
 				offerList = offerDao.findOfferByAuction(id_asta);
-				request.setAttribute("offerte", offerList);
+				datiNeccessari.put("offerte", offerList);
+				datiNeccessari.put("status", "aperta");
 			}
 			else {
 				UserDAO userDao = new UserDAO(connection);
@@ -92,18 +105,26 @@ public class ShowDettaglioAsta extends HttpServlet {
 				if (maxOffer != null) {
 					winner = userDao.getUserInfo(maxOffer.getUser());
 				}
-				request.setAttribute("offertaMassima", maxOffer);
-				request.setAttribute("winner", winner);
+				datiNeccessari.put("offertaMassima", maxOffer);
+				datiNeccessari.put("winner", winner);
+				datiNeccessari.put("status", "chiusa");
 			}
 		}
 		catch (SQLException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().println("Error lato server");
 			return;
 		}
-		request.setAttribute("asta", auction);
-		request.setAttribute("articoli", articleList);
-		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/dettaglioAsta.jsp");
-		dispatcher.forward(request, response);
+		datiNeccessari.put("asta", auction);
+		session.setAttribute("idDettaglio", id);
+		Gson gson = new Gson();
+		
+		String json = gson.toJson(datiNeccessari);
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		response.getWriter().write(json);
 	}
 	public void destroy() {
 		try {

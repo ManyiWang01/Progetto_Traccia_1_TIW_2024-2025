@@ -69,7 +69,15 @@ public class ShowOfferta extends HttpServlet {
 			response.sendRedirect("/AstaHTML/Acquisto");
 			return;
 		}
-		Integer id_asta = Integer.parseInt(id);
+		Integer id_asta = null;
+		try {
+			id_asta = Integer.parseInt(id);
+		}
+		catch (NumberFormatException n) {
+			response.sendRedirect("/AstaHTML/Acquisto");
+			return;
+		}
+		
 		AuctionDAO auctionDao = new AuctionDAO(connection);
 		ArticleDAO articleDao = new ArticleDAO(connection);
 		OfferDAO offerDao = new OfferDAO(connection);
@@ -82,7 +90,7 @@ public class ShowOfferta extends HttpServlet {
 			offerList = offerDao.findOfferByAuction(id_asta);
 			articleList = articleDao.findArticleByAuction(id_asta);
 			maxOffer = offerDao.findMaxOffer(id_asta);
-			if (offerList == null || articleList == null || auction == null) {
+			if (offerList == null || articleList == null || auction == null || auction.getCreator().equals((String) session.getAttribute("username"))) {
 				response.sendRedirect("/AstaHTML/Acquisto");
 				return;
 			}
@@ -103,6 +111,7 @@ public class ShowOfferta extends HttpServlet {
 		request.setAttribute("offerList", offerList);
 		request.setAttribute("articleList", articleList);
 		request.setAttribute("maxOffer", maxOffer);
+		session.setAttribute("idOfferta", id);
 		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/offertaAsta.jsp");
 		dispatcher.forward(request, response);
 	}

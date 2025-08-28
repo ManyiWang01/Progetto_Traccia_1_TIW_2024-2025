@@ -17,13 +17,16 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 import it.polimi.tiw.progettoAsta.dao.UserDAO;
 
 /**
  * Servlet implementation class Login
  */
-@WebServlet("/")
+@WebServlet("/login")
 public class Login extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Connection connection = null;
@@ -74,8 +77,7 @@ public class Login extends HttpServlet {
 			else {
 				session.setAttribute("username", username);
 				session.setAttribute("success_log", true);
-				Timestamp now = new Timestamp(System.currentTimeMillis());
-				now.setNanos(0);
+				Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
 				session.setAttribute("login_timestamp", now);
 				response.sendRedirect("/AstaHTML/Home");
 			}
@@ -85,11 +87,6 @@ public class Login extends HttpServlet {
 			response.sendRedirect("/AstaHTML/");
 		}
 	}
-	
-//	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-//		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/login.jsp");
-//        dispatcher.forward(request, response);
-//	}
 	
 	public void destroy() {
 		try {

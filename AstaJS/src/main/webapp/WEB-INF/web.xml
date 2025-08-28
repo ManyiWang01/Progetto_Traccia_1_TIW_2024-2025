@@ -17,8 +17,27 @@
     <param-name>dbDriver</param-name>
     <param-value>com.mysql.cj.jdbc.Driver</param-value>
   </context-param>
+  <filter> 
+      <filter-name>LoginChecker</filter-name>
+      <filter-class>it.polimi.tiw.progettoAsta.filters.LoginChecker</filter-class> 
+ </filter> 
+ <filter-mapping> 
+    <filter-name>LoginChecker</filter-name> 
+    <url-pattern>/Vendo</url-pattern> 
+    <url-pattern>/Acquisto</url-pattern> 
+    <url-pattern>/DettaglioAsta</url-pattern> 
+    <url-pattern>/Offerta</url-pattern> 
+    <url-pattern>/FindAuctionByKey</url-pattern> 
+    <url-pattern>/CreateAuction</url-pattern> 
+    <url-pattern>/EndAuction</url-pattern> 
+    <url-pattern>/AddArticle</url-pattern> 
+    <url-pattern>/MakeAnOffer</url-pattern> 
+    <url-pattern>/Logout</url-pattern> 
+    <url-pattern>/LastVisitedAuction</url-pattern> 
+    <url-pattern>/Home.html</url-pattern> 
+ </filter-mapping> 
 
   <welcome-file-list>
-  	<welcome-file>login.jsp</welcome-file>
+  	<welcome-file>loginPage.html</welcome-file>
   </welcome-file-list>
 </web-app>

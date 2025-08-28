@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,14 +34,19 @@ public class AuctionDAO {
 			pstatement = connection.prepareStatement(query);
 			pstatement.setInt(1, id_asta);
 			result = pstatement.executeQuery();
-			while (result.next()) {
-				auction.setId_asta(result.getInt("id_asta"));
-				auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
-				auction.setMin_rialzo(result.getInt("min_rialzo"));
-				auction.setData_scadenza(result.getTimestamp("data_scadenza"));
-				auction.setCreator(result.getString("username"));
-				auction.setStatus(result.getBoolean("status"));
-				auction.setWinner(result.getString("winner"));
+			if (!result.next()) {
+				return null;
+			}
+			else {
+				do {
+					auction.setId_asta(result.getInt("id_asta"));
+					auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
+					auction.setMin_rialzo(result.getInt("min_rialzo"));
+					auction.setData_scadenza(result.getTimestamp("data_scadenza"));
+					auction.setCreator(result.getString("username"));
+					auction.setStatus(result.getBoolean("status"));
+					auction.setWinner(result.getString("winner"));
+				} while (result.next());
 			}
 		}
 		catch (SQLException e) {
@@ -132,7 +138,7 @@ public class AuctionDAO {
 	}
 	
 	public void endAuction(int id_asta, String winner) throws SQLException {
-		if (id_asta < 0 || winner.trim().isEmpty()) {
+		if (id_asta < 0 || (winner != null && winner.trim().isEmpty())) {
 			return;
 		}
 		String query = "UPDATE asta SET status = 1, winner = ? WHERE id_asta = ?";
@@ -252,62 +258,39 @@ public class AuctionDAO {
 		return auctionList;
 	}
 	
-  	public List<AuctionBean> findAuctionByKey(String key, String username) throws SQLException {
+	public List<AuctionBean> findAuctionByKey(String key, String username) throws SQLException {
 		if (key == null || key.trim().isEmpty() || username == null || username.trim().isEmpty()) {
 			return null;
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();
-		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
-		String query = "SELECT * FROM asta WHERE data_scadenza > ? AND status = false AND username <> ? ORDER BY data_scadenza DESC";
+		Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
+		String query = "SELECT a.* " +
+	               "FROM asta a " +
+	               "WHERE a.data_scadenza > ? " +
+	               "AND a.status = false " +
+	               "AND a.username <> ? " +
+	               "AND EXISTS (SELECT 1 FROM articolo ar WHERE ar.id_asta = a.id_asta " +
+	               "AND (ar.nome LIKE ? OR ar.descrizione LIKE ?)) " +
+	               "ORDER BY a.data_scadenza DESC";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;
-		String article_query = "SELECT id_articolo, nome, descrizione FROM articolo WHERE id_asta = ? AND id_asta IS NOT NULL";
-		ResultSet article_result = null;
-		PreparedStatement article_pstatement = null;
 		try {
 			pstatement = connection.prepareStatement(query);
 			pstatement.setTimestamp(1, now);
 			pstatement.setString(2, username);
+	        pstatement.setString(3, "%" + key + "%");
+	        pstatement.setString(4, "%" + key + "%");
 			result = pstatement.executeQuery();
 			while (result.next()) {
-				try {
-					article_pstatement = connection.prepareStatement(article_query);
-					article_pstatement.setInt(1, result.getInt("id_asta"));
-					article_result = article_pstatement.executeQuery();
-					while (article_result.next()) {
-						if (article_result.getString("nome").contains(key) || article_result.getString("descrizione").contains(key)) {
-							AuctionBean auction = new AuctionBean();
-							auction.setId_asta(result.getInt("id_asta"));
-							auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
-							auction.setMin_rialzo(result.getInt("min_rialzo"));
-							auction.setData_scadenza(result.getTimestamp("data_scadenza"));
-							auction.setCreator(result.getString("username"));
-							auction.setStatus(result.getBoolean("status"));
-							auction.setWinner(result.getString("winner"));
-							auctionList.addLast(auction);
-							break;
-						}
-					}
-				}
-				catch (SQLException e){
-					throw new SQLException(e);
-				}
-				finally {
-					try {
-						if (article_result != null) {
-							article_result.close();
-						}
-					} catch (Exception e1) {
-						throw new SQLException("Cannot close result");
-					}
-					try {
-						if (article_pstatement != null) {
-							article_pstatement.close();
-						}
-					} catch (Exception e1) {
-						throw new SQLException("Cannot close statement");
-					}
-				}
+				AuctionBean auction = new AuctionBean();
+				auction.setId_asta(result.getInt("id_asta"));
+				auction.setP_iniziale(result.getBigDecimal("p_iniziale"));
+				auction.setMin_rialzo(result.getInt("min_rialzo"));
+				auction.setData_scadenza(result.getTimestamp("data_scadenza"));
+				auction.setCreator(result.getString("username"));
+				auction.setStatus(result.getBoolean("status"));
+				auction.setWinner(result.getString("winner"));
+				auctionList.add(auction);
 			}
 		}
 		catch (SQLException e){

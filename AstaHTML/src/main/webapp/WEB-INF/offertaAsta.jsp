@@ -67,9 +67,8 @@
 	        	<c:if test="${not empty maxOffer }">
 	        		<c:set var="offerta" value="${maxOffer.p_offerta }"/>
 	        	</c:if>
-	        	<input type="number" name="prezzo" step="1.00" min="${offerta + auction.min_rialzo }" value="${offerta + auction.min_rialzo }">
+	        	<input type="number" name="prezzo" step="1.00" min="${offerta + auction.min_rialzo }" value="${offerta + auction.min_rialzo }" required>
 	        	<button type="submit">Offri</button>
-	        	<input name="id_asta" type="hidden" value="${auction.id_asta }"/>
 	        </form>
         </div>
     </body>
