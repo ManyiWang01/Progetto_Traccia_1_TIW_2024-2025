@@ -1,5 +1,6 @@
 package it.polimi.tiw.progettoAsta.controller;
 
+import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.UnavailableException;
@@ -14,32 +15,36 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gson.Gson;
 
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
-import it.polimi.tiw.progettoAsta.bean.OfferBean;
-import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
-import it.polimi.tiw.progettoAsta.dao.OfferDAO;
 
 /**
- * Servlet implementation class EndAuction
+ * Servlet implementation class ShowDettaglioAsta
  */
-@WebServlet("/EndAuction")
-public class EndAuction extends HttpServlet {
+@WebServlet("/LastVisited")
+public class LastVisitedAuction extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-    private Connection connection;
-    /**
-     * @see HttpServlet#HttpServlet()
-     */
-    public EndAuction() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-    
-    public void init() throws ServletException {
+	private Connection connection;
+
+	/**
+	 * @see HttpServlet#HttpServlet()
+	 */
+	public LastVisitedAuction() {
+		super();
+	}
+
+	public void init() throws ServletException {
 		try {
 			ServletContext context = getServletContext();
 			String driver = context.getInitParameter("dbDriver");
@@ -56,9 +61,11 @@ public class EndAuction extends HttpServlet {
 	}
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
+	 *      response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
 		String id = request.getParameter("id");
 		if (id == null || id.trim().isEmpty()) {
@@ -66,38 +73,39 @@ public class EndAuction extends HttpServlet {
 			response.getWriter().println("ID non trovato");
 			return;
 		}
+		Map<String, Object> datiNeccessari = new HashMap<>();
 		Integer id_asta = Integer.parseInt(id);
 		AuctionDAO auctionDao = new AuctionDAO(connection);
-		OfferDAO offerDao = new OfferDAO(connection);
-		Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
 		AuctionBean auction = null;
-		OfferBean offer = null;
+		Timestamp timestamp = null;
+		Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
 		try {
 			auction = auctionDao.getAuctionById(id_asta);
-			if (auction != null) {
-				if (now.after(auction.getData_scadenza())) {
-					offer = offerDao.findMaxOffer(id_asta);
-					if (offer != null) {
-						auctionDao.endAuction(id_asta, offer.getUser());
-					}
-					else {
-						auctionDao.endAuction(id_asta, null);
-					}
-				}
-				else {
-					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-					response.getWriter().println("Devi aspettare fino alla scadenza prima di chiudere");
+			if (!auction.isStatus()) {
+				timestamp = auction.getData_scadenza();
+				if (timestamp.after(now)) {
+					Duration diff = Duration.between(now.toInstant(), timestamp.toInstant());
+					long remainingDays = diff.toDays();
+					int remainingHours = diff.toHoursPart();
+					datiNeccessari.put("auction", auction);
+					datiNeccessari.put("remainingTime",  remainingDays + "gg " + remainingHours + "h");
+					Gson gson = new Gson();
+
+					String json = gson.toJson(datiNeccessari);
+					response.setStatus(HttpServletResponse.SC_OK);
+					response.setContentType("application/json");
+					response.setCharacterEncoding("UTF-8");
+					response.getWriter().write(json);
 					return;
 				}
 			}
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			response.getWriter().println("Error lato server");
 			return;
 		}
-		response.setStatus(HttpServletResponse.SC_OK);
 	}
+
 	public void destroy() {
 		try {
 			if (connection != null) {

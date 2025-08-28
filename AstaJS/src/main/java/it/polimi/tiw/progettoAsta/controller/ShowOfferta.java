@@ -5,20 +5,32 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.UnavailableException;
 import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import it.polimi.tiw.progettoAsta.bean.ArticleBean;
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
 import it.polimi.tiw.progettoAsta.bean.OfferBean;
+import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.dao.ArticleDAO;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 import it.polimi.tiw.progettoAsta.dao.OfferDAO;
@@ -59,14 +71,10 @@ public class ShowOfferta extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("success_log") == null) {
-			response.sendRedirect("/AstaHTML/");
-			return;
-			// redirect to login page
-		}
 		String id = request.getParameter("id");
 		if (id == null || id.trim().isEmpty()) {
-			response.sendRedirect("/AstaHTML/Acquisto");
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().println("ID non trovata");
 			return;
 		}
 		Integer id_asta = Integer.parseInt(id);
@@ -83,28 +91,55 @@ public class ShowOfferta extends HttpServlet {
 			articleList = articleDao.findArticleByAuction(id_asta);
 			maxOffer = offerDao.findMaxOffer(id_asta);
 			if (offerList == null || articleList == null || auction == null) {
-				response.sendRedirect("/AstaHTML/Acquisto");
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.getWriter().println("Error lato server");
 				return;
-			}
-			if (offerList.isEmpty()) {
-				request.setAttribute("emptyOffer", "Al momento non ci sono offerte");
-			}
-			if (articleList.isEmpty()) {
-				request.setAttribute("emptyArticle", "Error: Non ci sono articoli trovati in questa asta");
 			}
 		}
 		catch (SQLException e) {
-			request.setAttribute("offerError", "Error lato server");
-			RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/offertaAsta.jsp");
-			dispatcher.forward(request, response);
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().println("Error lato server");
 			return;
 		}
-		request.setAttribute("auction", auction);
-		request.setAttribute("offerList", offerList);
-		request.setAttribute("articleList", articleList);
-		request.setAttribute("maxOffer", maxOffer);
-		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/offertaAsta.jsp");
-		dispatcher.forward(request, response);
+		Map<String, Object> datiNeccessari = new HashMap<>();
+		datiNeccessari.put("auction", auction);
+		datiNeccessari.put("offerList", offerList);
+		datiNeccessari.put("articleList", articleList);
+		datiNeccessari.put("maxOffer", maxOffer);
+		Gson gson = new Gson();
+		String json = gson.toJson(datiNeccessari);
+
+		Cookie[] cookies = request.getCookies();
+		String username = ((SessionUser) session.getAttribute("user")).getUsername();
+		if (cookies != null) {
+			for (Cookie cookie : cookies) {
+				if (cookie.getName().contains("userData")) {
+					String decodedJson = URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8.toString());
+					Map<String, Object> userData = gson.fromJson(decodedJson, new TypeToken<Map<String, Object>>(){}.getType());
+					String cookieUserName = (String) userData.get("username");
+					if (username.equals(cookieUserName)) {
+						userData.put("lastAction", "Acquisto");
+						String arrayList = gson.toJson(userData.get("lastVisited"));
+				        Type listType = new TypeToken<List<Integer>>(){}.getType();				        
+						List<Integer> lastVisited = gson.fromJson(arrayList, listType);
+						if (!lastVisited.contains(id_asta)) {
+							lastVisited.addFirst(id_asta);
+						}
+						userData.put("lastVisited", lastVisited);
+						String dataJson = gson.toJson(userData);
+						String encodedJson = URLEncoder.encode(dataJson, StandardCharsets.UTF_8.toString());
+						Cookie newCookie = new Cookie("userData_" + username, encodedJson);
+						newCookie.setPath("/AstaJS/");
+						newCookie.setMaxAge(30 * 24 * 60 * 60);
+						response.addCookie(newCookie);
+						break;
+					}
+				}
+			}
+		}
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.setContentType("application/json");
+		response.getWriter().write(json);
 	}
 	public void destroy() {
 		try {

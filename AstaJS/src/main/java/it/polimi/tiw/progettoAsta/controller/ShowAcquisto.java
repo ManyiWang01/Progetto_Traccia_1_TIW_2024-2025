@@ -19,9 +19,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.Gson;
+
 import it.polimi.tiw.progettoAsta.bean.ArticleBean;
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
 import it.polimi.tiw.progettoAsta.bean.OfferBean;
+import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.dao.ArticleDAO;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 import it.polimi.tiw.progettoAsta.dao.OfferDAO;
@@ -62,22 +65,21 @@ public class ShowAcquisto extends HttpServlet {
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("success_log") == null) {
-			response.sendRedirect("/AstaHTML/");
-			return;
-			// redirect to login page
-		}
 		AuctionDAO auctionDao = new AuctionDAO(connection);
 		ArticleDAO articleDao = new ArticleDAO(connection);
 		OfferDAO offerDao = new OfferDAO(connection);
 		List<AuctionBean> winnedAuctionList = null;
 		Map<Integer, List<ArticleBean>> winnedArticleMap = new HashMap<>();
 		Map<Integer, BigDecimal> maxOfferMap = new HashMap<>();
+		Map<String, Object> datiNeccessari = new HashMap<>();
+		Gson gson = new Gson();
 		try {
-			winnedAuctionList = auctionDao.findAuctionByWinner((String) session.getAttribute("username"));
-			if (winnedAuctionList == null || winnedAuctionList.isEmpty()) {
-				RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/acquistoPage.jsp");
-				dispatcher.forward(request, response);
+			winnedAuctionList = auctionDao.findAuctionByWinner(((SessionUser) session.getAttribute("user")).getUsername());
+			if (winnedAuctionList.isEmpty()) {
+				String json = gson.toJson(datiNeccessari);
+				response.setStatus(HttpServletResponse.SC_OK);
+				response.setContentType("application/json");
+				response.getWriter().write(json);
 				return;
 			}
 			for (AuctionBean auction : winnedAuctionList) {
@@ -91,15 +93,18 @@ public class ShowAcquisto extends HttpServlet {
 			}
 		}
 		catch (SQLException e) {
-			RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/acquistoPage.jsp");
-			dispatcher.forward(request, response);
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().println("Error lato server");
 			return;
 		}
-		request.setAttribute("maxOffer", maxOfferMap);
-		request.setAttribute("winnedAuction", winnedAuctionList);
-		request.setAttribute("winnedArticle", winnedArticleMap);
-		RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/acquistoPage.jsp");
-		dispatcher.forward(request, response);
+		datiNeccessari.put("maxOffer", maxOfferMap);
+		datiNeccessari.put("winnedAuction", winnedAuctionList);
+		datiNeccessari.put("winnedArticle", winnedArticleMap);
+		
+		String json = gson.toJson(datiNeccessari);
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.setContentType("application/json");
+		response.getWriter().write(json);
 	}
 	public void destroy() {
 		try {

@@ -3,6 +3,7 @@ package it.polimi.tiw.progettoAsta.controller;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.UnavailableException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,15 +14,21 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.google.gson.Gson;
 
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
+import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 
 /**
  * Servlet implementation class FindAuctionByKey
  */
 @WebServlet("/FindAuctionByKey")
+@MultipartConfig
 public class FindAuctionByKey extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     private Connection connection;
@@ -54,41 +61,42 @@ public class FindAuctionByKey extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("success_log") == null) {
-			response.sendRedirect("/AstaHTML/");
-			return;
-			// redirect to login page
-		}
 		String key = request.getParameter("searchBar");
 		if (key == null || key.trim().isEmpty()) {
-			session.setAttribute("searchError", "Inserisci una parola chiave da ricercare");
-			response.sendRedirect("/AstaHTML/Acquisto");
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().println("Parola chiave non deve essere nulla");
 			return;
 		}
-		String username = (String) session.getAttribute("username");
+		String username = ((SessionUser) session.getAttribute("user")).getUsername();
 		AuctionDAO auctionDao = new AuctionDAO(connection);
 		List<AuctionBean> auctionList = null;
 		try {
 			auctionList = auctionDao.findAuctionByKey(key, username);
 			if (auctionList == null) {
-				session.setAttribute("searchError", "Error lato server");
-				response.sendRedirect("/AstaHTML/Acquisto");
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.getWriter().println("Error lato server");
 				return;
 			}
 			else if (auctionList.isEmpty()) {
-				session.setAttribute("emptyError", "Nessun'asta trovata con parola chiave " + request.getParameter("searchBar"));
+				response.setStatus(HttpServletResponse.SC_FOUND);
+				response.getWriter().println("Nessun'asta trovato con questa parola chiave");
+				return;
 			}
 			else {
-				session.setAttribute("openAuctionList", auctionList);
+				Map<String, Object> datiNeccessari = new HashMap<>();
+				datiNeccessari.put("openAuctionList", auctionList);
+				Gson gson = new Gson();
+				String json = gson.toJson(datiNeccessari);
+				response.setStatus(HttpServletResponse.SC_OK);
+				response.setContentType("application/json");
+				response.getWriter().write(json);
 			}
 		}
 		catch (SQLException e) {
-			e.printStackTrace();
-			session.setAttribute("searchError", "Error lato server");
-			response.sendRedirect("/AstaHTML/Acquisto");
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().println("Error lato server");
 			return;
 		}
-		response.sendRedirect("/AstaHTML/Acquisto");
 	}
 	public void destroy() {
 		try {

@@ -15,6 +15,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 import it.polimi.tiw.progettoAsta.bean.AuctionBean;
@@ -71,7 +72,7 @@ public class EndAuction extends HttpServlet {
 		Integer id_asta = Integer.parseInt(id);
 		AuctionDAO auctionDao = new AuctionDAO(connection);
 		OfferDAO offerDao = new OfferDAO(connection);
-		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
+		Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
 		AuctionBean auction = null;
 		OfferBean offer = null;
 		try {

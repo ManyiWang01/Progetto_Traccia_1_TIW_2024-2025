@@ -3,6 +3,7 @@ package it.polimi.tiw.progettoAsta.controller;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.UnavailableException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,8 +17,14 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.google.gson.Gson;
+
+import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.dao.AuctionDAO;
 import it.polimi.tiw.progettoAsta.dao.OfferDAO;
 
@@ -25,6 +32,7 @@ import it.polimi.tiw.progettoAsta.dao.OfferDAO;
  * Servlet implementation class MakeAnOffer
  */
 @WebServlet("/MakeAnOffer")
+@MultipartConfig
 public class MakeAnOffer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     private Connection connection;
@@ -58,26 +66,26 @@ public class MakeAnOffer extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("success_log") == null) {
-			response.sendRedirect("/AstaHTML/");
-			return;
-			// redirect to login page
-		}
 		String id_asta = request.getParameter("id_asta");
 		if (id_asta == null || id_asta.trim().isEmpty()) {
-			response.sendRedirect("/AstaHTML/Acquisto");
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().println("ID non trovata");
 			return;
 		}
 		Integer id = Integer.parseInt(id_asta);
 		OfferDAO offerDao = new OfferDAO(connection);
 		try {
-			offerDao.makeAnOffer(id, (String) session.getAttribute("username"), Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES)), new BigDecimal(request.getParameter("prezzo")));
+			offerDao.makeAnOffer(id, ((SessionUser) session.getAttribute("user")).getUsername(), 
+					Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES)),
+					new BigDecimal(request.getParameter("prezzo")));
 		}
 		catch (SQLException e) {
-			session.setAttribute("offertaError", "Error lato server");
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.getWriter().println("Error lato server");
+			return;
 		}
-		response.sendRedirect("/AstaHTML/Offerta?id=" + id);
-		
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.getWriter().println(id);
 	}
 	public void destroy() {
 		try {

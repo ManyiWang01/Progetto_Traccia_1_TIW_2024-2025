@@ -23,7 +23,7 @@ import it.polimi.tiw.progettoAsta.dao.UserDAO;
 /**
  * Servlet implementation class Login
  */
-@WebServlet("/")
+@WebServlet("/login")
 public class Login extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private Connection connection = null;

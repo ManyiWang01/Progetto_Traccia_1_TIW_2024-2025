@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -132,7 +133,7 @@ public class AuctionDAO {
 	}
 	
 	public void endAuction(int id_asta, String winner) throws SQLException {
-		if (id_asta < 0 || winner.trim().isEmpty()) {
+		if (id_asta < 0 || (winner != null && winner.trim().isEmpty())) {
 			return;
 		}
 		String query = "UPDATE asta SET status = 1, winner = ? WHERE id_asta = ?";
@@ -257,7 +258,7 @@ public class AuctionDAO {
 			return null;
 		}
 		List<AuctionBean> auctionList = new ArrayList<>();
-		Timestamp now = Timestamp.from(Instant.now().truncatedTo(ChronoUnit.MINUTES));
+		Timestamp now = Timestamp.from((Instant.now().atZone(ZoneId.of("Europe/Rome"))).toInstant().truncatedTo(ChronoUnit.MINUTES));
 		String query = "SELECT * FROM asta WHERE data_scadenza > ? AND status = false AND username <> ? ORDER BY data_scadenza DESC";
 		ResultSet result = null;
 		PreparedStatement pstatement = null;

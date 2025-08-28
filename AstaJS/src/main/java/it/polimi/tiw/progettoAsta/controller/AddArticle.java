@@ -3,6 +3,7 @@ package it.polimi.tiw.progettoAsta.controller;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.UnavailableException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,12 +16,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import it.polimi.tiw.progettoAsta.bean.SessionUser;
 import it.polimi.tiw.progettoAsta.dao.ArticleDAO;
 
 /**
  * Servlet implementation class AddArticle
  */
 @WebServlet("/AddArticle")
+@MultipartConfig
 public class AddArticle extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     private Connection connection;
@@ -52,11 +55,6 @@ public class AddArticle extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		HttpSession session = request.getSession(false);
-		if (session == null || session.getAttribute("success_log") == null) {
-			response.sendRedirect("/AstaHTML/");
-			return;
-			// redirect to login page
-		}
 		String nome = request.getParameter("nome_articolo");
 		String descrizione = request.getParameter("descrizione");
 		String immagine = request.getParameter("url_immagine");
@@ -64,33 +62,22 @@ public class AddArticle extends HttpServlet {
 		if (nome == null || descrizione == null || immagine == null || prezzo == null ||
 				nome.trim().isEmpty() || descrizione.trim().isEmpty() || 
 				immagine.trim().isEmpty() || prezzo.trim().isEmpty()) {
-			if (nome != null && !nome.trim().isEmpty()) {
-				session.setAttribute("nome", nome);
-			}
-			if (descrizione != null && !descrizione.trim().isEmpty()) {
-				session.setAttribute("descrizione", descrizione);
-			}
-			if (immagine != null && !immagine.trim().isEmpty()) {
-				session.setAttribute("immagine", immagine);
-			}
-			if (prezzo != null && !prezzo.trim().isEmpty()) {
-				session.setAttribute("prezzo", prezzo);
-			}
-			session.setAttribute("addArticleError", "Tutti i campi devono essere riempiti");
+			response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			response.getWriter().println("Tutti i campi devono essere riempiti");
+			return;
 		}
 		else {
 			ArticleDAO articleDao = new ArticleDAO(connection);
 			try {
-				articleDao.addArticle(nome, descrizione, immagine, new BigDecimal(prezzo), (String) session.getAttribute("username"));
+				articleDao.addArticle(nome, descrizione, immagine, new BigDecimal(prezzo), ((SessionUser) session.getAttribute("user")).getUsername());
 			}
 			catch (SQLException e) {
-				e.printStackTrace();
-				session.setAttribute("addArticleError", "Errore lato server");
-				response.sendRedirect("/AstaHTML/Vendo");
+				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.getWriter().println("Error lato server");
 				return;
 			}
 		}
-		response.sendRedirect("/AstaHTML/Vendo");
+		response.setStatus(HttpServletResponse.SC_OK);
 	}
 	
 	public void destroy() {
