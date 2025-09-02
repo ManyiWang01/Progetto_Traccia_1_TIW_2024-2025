@@ -99,7 +99,12 @@ public class ShowVendo extends HttpServlet {
 				try {
 					articleMap.put(id_asta, articleDao.findArticleByAuction(id_asta));
 					OfferBean maxOffer = offerDao.findMaxOffer(id_asta);
-					offerMap.put(id_asta, (maxOffer == null ? null : maxOffer.getP_offerta()));
+					if (maxOffer == null || maxOffer.getP_offerta().equals(new BigDecimal("0"))) {
+						offerMap.put(id_asta, null);
+					}
+					else {
+						offerMap.put(id_asta, maxOffer.getP_offerta());
+					}
 					Instant endTime = auction.getData_scadenza().toInstant();
 					Duration diff = Duration.between(loginTime, endTime);
 					long remainingDays = diff.toDays();

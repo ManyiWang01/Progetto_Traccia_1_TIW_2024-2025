@@ -119,7 +119,7 @@
 				anchor.href = "#";
 				anchor.setAttribute("id_asta", id_auction);
 				anchor.appendChild(document.createTextNode(id_auction));
-				if (offerMap[id_auction] === undefined || offerMap[id_auction] === 0) {
+				if (offerMap[id_auction] === null || offerMap[id_auction] === undefined) {
 					offer.textContent = "Non ci sono offerte";
 				}
 				else {
@@ -304,6 +304,7 @@
 			let offertaMassima = dettaglio.offertaMassima;
 			let offerteList = dettaglio.offerte;
 			let errorMessage = "Non ci sono offerte";
+			let auction = dettaglio.asta;	 
 			
 			if (dettaglio.status === "aperta") {
 				if (offerteList === null || offerteList.length === 0) {
@@ -324,7 +325,7 @@
 			tRow = document.createElement("tr");
 			table.appendChild(tRow);
 			tabletd.appendChild(table);
-			if (winner === undefined) {
+			if (auction.status === false) {
 				let usernameHead = document.createElement("th");
 				let offertaHead = document.createElement("th");
 				let dateHead = document.createElement("th");
@@ -337,7 +338,7 @@
 				let openAuctionInfo = new OpenAuctionInfo(table);
 				openAuctionInfo.show(offerteList);
 			}
-			else {
+			else if (winner !== undefined){
 				let winnerHead = document.createElement("th");
 				let finalPriceHead = document.createElement("th");
 				let addressHead = document.createElement("th");

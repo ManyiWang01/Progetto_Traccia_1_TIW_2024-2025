@@ -56,7 +56,7 @@
        				<c:otherwise>
         				<table>
 		        			<c:choose>
-		        				<c:when test="${not empty offertaMassima }">
+		        				<c:when test="${not empty offertaMassima && offertaMassima.p_offerta != 0}">
 		        					<tr> <td>Nome Vincitore</td> <td>Offerta Finale</td> <td>Indirizzo Spedizione</td></tr>
 			        				<tr>
 					        			<td> <c:out value="${winner.cognome } ${winner.nome }"/> </td>
