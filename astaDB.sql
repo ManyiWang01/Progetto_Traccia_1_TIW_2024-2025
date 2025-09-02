@@ -37,7 +37,7 @@ CREATE TABLE `articolo` (
   KEY `id_asta_idx` (`id_asta`),
   CONSTRAINT `id_asta_articolo` FOREIGN KEY (`id_asta`) REFERENCES `asta` (`id_asta`) ON UPDATE CASCADE,
   CONSTRAINT `user_articolo` FOREIGN KEY (`username`) REFERENCES `user` (`username`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=32 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=56 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,7 +46,7 @@ CREATE TABLE `articolo` (
 
 LOCK TABLES `articolo` WRITE;
 /*!40000 ALTER TABLE `articolo` DISABLE KEYS */;
-INSERT INTO `articolo` VALUES (22,'tavolo','questo e\' un tavolo','tavolo.jpg',45.00,'user2',14),(23,'tavolo','questo e\' un tavolo','tavolo.png',30.55,'user2',14),(24,'anello','anello di argento','anello.jpg',70.00,'user2',15),(25,'anello','anello di oro','anello.jpg',900.00,'user2',15),(26,'tavolo','tavolo plastica','tavolo.jpg',15.00,'user2',14),(27,'tavolo','tavolo','tavolo.jpg',45.00,'user2',NULL),(28,'sedia','sedia di legno','sedia.jpg',7.00,'user3',NULL),(29,'sedia','sedia di legno','sedia.jpg',10.00,'user3',16),(30,'sedia','sedia di plastica','sedia.jpg',5.00,'user3',16),(31,'sedia','10 sedie di legno','sedia.jpg',40.00,'user3',16);
+INSERT INTO `articolo` VALUES (2,'tavolo1','tavolo di legno','imgtavolo1.jpg',20.00,'user1',NULL),(3,'tavolo2','tavolo di legno','imgtavolo2.jpg',15.00,'user2',5),(4,'sedia1','sedia di legno','imgsedia1.jpg',5.50,'user1',1),(5,'sedia2','sedia di plastica','imgsedia2.jpg',3.00,'user1',1),(6,'sedia3','sedia da gaming','imgsedia3',35.00,'user3',NULL),(7,'mouse','mouse gaming','imgmouse.jpg',6.00,'user3',NULL),(8,'tastiera1','tastiera gaming','imgtastiera1.jpg',12.50,'user3',NULL),(9,'tastiera2','tastiera wireless','imgtastiera2.jpg',25.00,'user2',NULL),(10,'tastiera3','tastiera meccanica','imgtastiera3.jpg',18.50,'user4',4),(11,'tastiera4','tastiera meccanica gaming','imgtastiera4.jpg',20.50,'user5',NULL),(12,'cuffia1','cuffia wireless','imgcuffia1.jpg',25.00,'user5',NULL),(13,'cuffia2','cuffiada gaming','imgcuffia2.jpg',18.00,'user4',4),(14,'anello1','gioiello in argento ','imganello1.jpg',50.00,'user2',2),(15,'anello2','gioiello in oro','imganello2.jpg',100.00,'user2',2),(16,'anello3','gioiello in oro con perla','imganello3.jpg',60.00,'user1',NULL),(17,'anello4','gioiello in oro con perla','imganello4.jpg',45.50,'user1',NULL),(18,'bracciale','bracciale in argento','imgbracciale.jpg',50.00,'user3',3),(19,'ciondolo1','ciondolo in oro','imgciondolo1.jpg',75.00,'user2',NULL),(20,'ciondolo2','ciondolo in argento','imgciondolo2.jpg',105.00,'user2',NULL),(21,'ciondolo3','ciondolo con perla','imgciondolo3.jpg',64.50,'user1',NULL),(22,'penna','a sfera','imgpenna',2.00,'user1',NULL),(40,'smartphone','nuovo','imgsmartphone',500.00,'user5',6),(41,'ciotola','legno','imgciotola',5.00,'user2',7),(42,'borsa1','pelle vera','imgborsa1',200.00,'user2',NULL),(43,'padella','nuovo antiaderente','imgpadella',20.00,'user2',7),(44,'borsa2','di lusso','imgborsa2',3500.00,'user2',NULL),(45,'chitarra1','nuovo','imgchitarra1',300.00,'user3',8),(46,'chitarra2','acustica','imgchitarra2',150.00,'user3',NULL),(47,'basso','nuovo','imgbasso',200.00,'user3',NULL),(48,'abito','lungo con etichetta','imgabito',50.00,'user4',9),(49,'maglia','nuovo con etichetta','imgmaglia',20.00,'user4',9),(50,'pantalone di lusso','nero nuovo','imgpantalone',125.00,'user4',NULL),(51,'scarpe','di colore nero','imgstampante',60.00,'user4',9),(52,'giacca di lusso','nuovo con tasca ','imggiacca',150.00,'user5',NULL),(53,'stampante','nuovo','imgstampante',85.50,'user5',10),(54,'giacca da vento','nuovo','imggiacca',45.00,'user5',NULL),(55,'scaffale','di legno','imgscaffale',80.00,'user5',11);
 /*!40000 ALTER TABLE `articolo` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -71,7 +71,7 @@ CREATE TABLE `asta` (
   KEY `user_idx` (`username`,`winner`),
   CONSTRAINT `user_asta` FOREIGN KEY (`username`) REFERENCES `user` (`username`) ON UPDATE CASCADE,
   CONSTRAINT `winner_asta` FOREIGN KEY (`winner`) REFERENCES `user` (`username`) ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb3;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -80,7 +80,7 @@ CREATE TABLE `asta` (
 
 LOCK TABLES `asta` WRITE;
 /*!40000 ALTER TABLE `asta` DISABLE KEYS */;
-INSERT INTO `asta` VALUES (14,90.55,8,'2025-09-25 21:59:00','user2',0,NULL),(15,970.00,80,'2025-08-03 18:00:00','user2',0,NULL),(16,55.00,20,'2025-09-15 22:00:00','user3',0,NULL);
+INSERT INTO `asta` VALUES (1,8.50,1,'2025-09-04 22:00:00','user1',0,NULL),(2,150.00,1,'2025-09-03 22:00:00','user2',0,NULL),(3,50.00,2,'2025-02-01 23:00:00','user3',1,'user2'),(4,38.50,1,'2025-03-02 23:00:00','user4',1,'user1'),(5,15.00,2,'2025-04-03 22:00:00','user2',1,'user3'),(6,500.00,50,'2025-07-07 20:00:00','user5',1,'user4'),(7,25.00,2,'2025-07-01 08:05:00','user2',1,'user5'),(8,300.00,10,'2025-09-05 10:35:00','user3',0,NULL),(9,130.00,2,'2025-09-06 08:00:00','user4',0,NULL),(10,85.50,5,'2025-06-14 10:00:00','user5',1,'user1'),(11,80.00,1,'2025-08-30 10:00:00','user5',0,NULL);
 /*!40000 ALTER TABLE `asta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -96,7 +96,7 @@ CREATE TABLE `offerta` (
   `username` varchar(255) NOT NULL,
   `data_offerta` timestamp NOT NULL,
   `p_offerta` decimal(10,2) NOT NULL,
-  PRIMARY KEY (`id_asta`,`username`,`data_offerta`,`p_offerta`),
+  PRIMARY KEY (`id_asta`,`username`,`data_offerta`),
   KEY `username_idx` (`username`),
   CONSTRAINT `id_asta_offerta` FOREIGN KEY (`id_asta`) REFERENCES `asta` (`id_asta`) ON UPDATE CASCADE,
   CONSTRAINT `user_offerta` FOREIGN KEY (`username`) REFERENCES `user` (`username`) ON UPDATE CASCADE
@@ -109,7 +109,7 @@ CREATE TABLE `offerta` (
 
 LOCK TABLES `offerta` WRITE;
 /*!40000 ALTER TABLE `offerta` DISABLE KEYS */;
-INSERT INTO `offerta` VALUES (14,'user1','2025-07-31 15:47:00',100.55),(15,'user1','2025-07-31 15:45:00',1050.00),(15,'user1','2025-07-31 15:50:00',1210.00),(16,'user2','2025-08-31 16:03:00',20.00),(16,'user2','2025-08-31 16:04:00',40.00),(16,'user2','2025-08-31 16:04:00',60.00),(15,'user3','2025-07-31 15:50:00',1130.00),(15,'user4','2025-07-31 15:51:00',1290.00);
+INSERT INTO `offerta` VALUES (1,'user2','2025-09-03 15:00:00',10.00),(1,'user3','2025-09-03 15:01:00',20.00),(3,'user1','2025-02-01 06:00:00',52.00),(3,'user1','2025-02-01 06:07:00',58.00),(3,'user2','2025-02-01 06:05:00',55.00),(3,'user2','2025-02-01 06:10:00',60.00),(4,'user1','2025-03-01 11:00:00',40.00),(4,'user1','2025-03-01 11:06:00',50.00),(4,'user1','2025-03-02 11:00:00',70.00),(4,'user2','2025-03-01 11:05:00',41.00),(4,'user3','2025-03-01 11:05:00',45.00),(4,'user5','2025-03-01 11:10:00',60.00),(5,'user3','2025-04-03 15:00:00',35.00),(5,'user5','2025-04-03 13:00:00',17.00),(6,'user1','2025-07-04 20:00:00',600.00),(6,'user2','2025-07-05 06:10:00',650.00),(6,'user2','2025-07-07 09:00:00',750.00),(6,'user4','2025-07-04 10:00:00',550.00),(6,'user4','2025-07-06 07:00:00',700.00),(6,'user4','2025-07-07 18:00:00',800.00),(7,'user3','2025-06-30 08:05:00',27.00),(7,'user3','2025-07-01 07:30:00',37.00),(7,'user4','2025-07-01 07:05:00',29.00),(7,'user4','2025-07-01 07:45:00',39.00),(7,'user5','2025-07-01 07:25:00',35.00),(7,'user5','2025-07-01 08:00:00',42.00),(8,'user1','2025-09-01 13:35:00',350.00),(8,'user1','2025-09-02 08:48:00',375.00),(8,'user2','2025-09-01 13:35:00',340.00),(8,'user2','2025-09-02 18:35:00',405.00),(8,'user4','2025-09-01 10:35:00',310.00),(8,'user4','2025-09-01 11:51:00',330.00),(8,'user4','2025-09-01 13:35:00',360.00),(8,'user4','2025-09-02 13:55:00',385.00),(8,'user5','2025-09-01 11:45:00',320.00),(8,'user5','2025-09-02 17:00:00',395.00),(9,'user1','2025-09-02 05:35:00',132.00),(9,'user1','2025-09-02 18:35:00',150.00),(9,'user3','2025-09-02 06:05:00',134.00),(10,'user1','2025-06-11 10:00:00',100.00),(10,'user1','2025-06-13 10:00:00',120.00),(10,'user1','2025-06-14 09:00:00',130.00),(10,'user3','2025-06-10 10:00:00',95.00),(10,'user3','2025-06-12 10:00:00',105.00),(10,'user3','2025-06-14 08:00:00',125.00),(11,'user1','2025-08-28 10:00:00',81.00),(11,'user1','2025-08-29 10:00:00',83.00),(11,'user3','2025-08-30 09:00:00',95.00),(11,'user4','2025-08-28 13:00:00',82.00),(11,'user4','2025-08-29 13:00:00',85.00);
 /*!40000 ALTER TABLE `offerta` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -136,7 +136,7 @@ CREATE TABLE `user` (
 
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
-INSERT INTO `user` VALUES ('user1','password1','Giulio','Rossi','via user 1'),('user2','password2','Anna','Blu','via user 2'),('user3','password3','Manuel','Verdi','via user 3'),('user4','password4','Paolo','Gialli','via user 4'),('user5','password5','Rachele','Bianchi','via user 5');
+INSERT INTO `user` VALUES ('user1','password1','Giulio','Rossi','via user 1'),('user2','password2','Anna','Blu','via user 2'),('user3','password3','Manuel','Verdi','via user 3'),('user4','password3','Paolo','Gialli','via user 4'),('user5','password4','Rachele','Bianchi','via user 5');
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -153,4 +153,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-31 18:07:22
+-- Dump completed on 2025-09-02 21:14:17
