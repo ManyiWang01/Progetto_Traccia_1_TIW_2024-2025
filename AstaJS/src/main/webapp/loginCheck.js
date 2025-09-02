@@ -1,5 +1,6 @@
 (function() {
 	document.getElementById("loginButton").addEventListener('click', function(e) {
+		document.getElementById("errorMessage").textContent = "";
 		let form = e.target.closest("form");
 		if (form.checkValidity()) {
 			e.preventDefault();
@@ -10,9 +11,6 @@
 						if (x.status === 200) { 
 							sessionStorage.setItem('userData', message);
 							window.location.href = "Home.html";
-						}
-						else if (x.status === 401) {
-							window.location.href = x.responseText;
 						}
 						else {
 							document.getElementById("errorMessage").textContent = message;
