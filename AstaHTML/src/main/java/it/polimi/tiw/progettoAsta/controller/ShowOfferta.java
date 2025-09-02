@@ -90,7 +90,7 @@ public class ShowOfferta extends HttpServlet {
 			offerList = offerDao.findOfferByAuction(id_asta);
 			articleList = articleDao.findArticleByAuction(id_asta);
 			maxOffer = offerDao.findMaxOffer(id_asta);
-			if (offerList == null || articleList == null || auction == null || auction.getCreator().equals((String) session.getAttribute("username"))) {
+			if (offerList == null || articleList == null || auction == null || auction.isStatus() || auction.getCreator().equals((String) session.getAttribute("username"))) {
 				response.sendRedirect("/AstaHTML/Acquisto");
 				return;
 			}

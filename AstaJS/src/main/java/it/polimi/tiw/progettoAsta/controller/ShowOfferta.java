@@ -98,7 +98,7 @@ public class ShowOfferta extends HttpServlet {
 			offerList = offerDao.findOfferByAuction(id_asta);
 			articleList = articleDao.findArticleByAuction(id_asta);
 			maxOffer = offerDao.findMaxOffer(id_asta);
-			if (offerList == null || articleList == null || auction == null) {
+			if (offerList == null || articleList == null || auction == null || auction.isStatus() || auction.getCreator().equals(((SessionUser) session.getAttribute("user")).getUsername())) {
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				response.getWriter().println("Error lato server");
 				return;
