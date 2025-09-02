@@ -304,7 +304,6 @@
 			let offertaMassima = dettaglio.offertaMassima;
 			let offerteList = dettaglio.offerte;
 			let errorMessage = "Non ci sono offerte";
-			let auction = dettaglio.asta;	 
 			
 			if (dettaglio.status === "aperta") {
 				if (offerteList === null || offerteList.length === 0) {
